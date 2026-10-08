@@ -3,8 +3,8 @@
 <link rel="stylesheet" href="assets/style.css"></head><body class="dev"><div class="page full"><main>
 <div class="topbar"><a href="index.html">← 메인</a><span></span></div>
 <section class="hero"><div class="chips"><span class="chip">가나다·ABC 순</span></div><h1>📖 용어집</h1>
-<p class="lead">지금까지 공부한 용어 7개 · 카드 아래 링크로 배운 날 페이지로 이동</p></section>
-<section class="card"><div class="filters"><button class="on" data-f="all">전체</button><button data-f="net">네트워크</button><input id="q" class="search" placeholder="용어나 설명 검색 (예: 방화벽, 인덱스)" autofocus></div>
+<p class="lead">지금까지 공부한 용어 15개 · 카드 아래 링크로 배운 날 페이지로 이동</p></section>
+<section class="card"><div class="filters"><button class="on" data-f="all">전체</button><button data-f="net">네트워크</button><button data-f="sm">SM</button><input id="q" class="search" placeholder="용어나 설명 검색 (예: 방화벽, 인덱스)" autofocus></div>
 <div class="ggrid"><div class="gcard" data-track="net" style="--tc:var(--net)">
 <div class="k">0.0.0.0 바인딩</div><div class="d">서버의 모든 네트워크 인터페이스에서 연결을 받겠다는 뜻</div>
 <div class="s"><a href="2026-10-08/아침공부.html" style="color:var(--tc)">10/08 · 네트워크에서 배움 →</a></div></div><div class="gcard" data-track="net" style="--tc:var(--net)">
@@ -15,11 +15,27 @@
 <div class="k">ICMP</div><div class="d">ping이 사용하는 프로토콜. 보안상 차단된 경우가 많아 ping 실패 ≠ 서버 다운</div>
 <div class="s"><a href="2026-10-08/아침공부.html" style="color:var(--tc)">10/08 · 네트워크에서 배움 →</a></div></div><div class="gcard" data-track="net" style="--tc:var(--net)">
 <div class="k">LISTEN</div><div class="d">프로세스가 특정 포트에서 연결을 기다리는 상태 (ss -tlnp로 확인)</div>
-<div class="s"><a href="2026-10-08/아침공부.html" style="color:var(--tc)">10/08 · 네트워크에서 배움 →</a></div></div><div class="gcard" data-track="net" style="--tc:var(--net)">
+<div class="s"><a href="2026-10-08/아침공부.html" style="color:var(--tc)">10/08 · 네트워크에서 배움 →</a></div></div><div class="gcard" data-track="sm" style="--tc:var(--sm)">
+<div class="k">SLA</div><div class="d">서비스 수준 협약. 처리기한, 복구 시간, 가용률 등 지켜야 할 서비스 수준을 수치로 정한 약속</div>
+<div class="s"><a href="2026-10-09/아침공부.html" style="color:var(--tc)">10/09 · SM에서 배움 →</a></div></div><div class="gcard" data-track="sm" style="--tc:var(--sm)">
+<div class="k">SR (Service Request)</div><div class="d">서비스 요청. 변경·개선·문의 등 운영 요청 1건을 식별하는 단위로 요청번호를 붙여 관리</div>
+<div class="s"><a href="2026-10-09/아침공부.html" style="color:var(--tc)">10/09 · SM에서 배움 →</a></div></div><div class="gcard" data-track="sm" style="--tc:var(--sm)">
+<div class="k">롤백 (Rollback)</div><div class="d">반영한 변경에 문제가 생겼을 때 이전 상태로 되돌리는 것</div>
+<div class="s"><a href="2026-10-09/아침공부.html" style="color:var(--tc)">10/09 · SM에서 배움 →</a></div></div><div class="gcard" data-track="net" style="--tc:var(--net)">
 <div class="k">루프백 (127.0.0.1)</div><div class="d">자기 자신을 가리키는 주소. 여기에만 바인딩하면 외부 접속 불가</div>
-<div class="s"><a href="2026-10-08/아침공부.html" style="color:var(--tc)">10/08 · 네트워크에서 배움 →</a></div></div><div class="gcard" data-track="net" style="--tc:var(--net)">
+<div class="s"><a href="2026-10-08/아침공부.html" style="color:var(--tc)">10/08 · 네트워크에서 배움 →</a></div></div><div class="gcard" data-track="sm" style="--tc:var(--sm)">
+<div class="k">산출물</div><div class="d">사업·운영 과정에서 작성해 남기는 문서와 결과물. 작업을 제대로 했다는 증거이자 추적 근거</div>
+<div class="s"><a href="2026-10-09/아침공부.html" style="color:var(--tc)">10/09 · SM에서 배움 →</a></div></div><div class="gcard" data-track="sm" style="--tc:var(--sm)">
+<div class="k">영향도 분석</div><div class="d">변경이 다른 화면·배치·DB·연계 시스템에 미치는 범위를 미리 파악하는 작업</div>
+<div class="s"><a href="2026-10-09/아침공부.html" style="color:var(--tc)">10/09 · SM에서 배움 →</a></div></div><div class="gcard" data-track="sm" style="--tc:var(--sm)">
+<div class="k">이행 (배포)</div><div class="d">개발·테스트가 끝난 변경을 운영 환경에 반영하는 작업</div>
+<div class="s"><a href="2026-10-09/아침공부.html" style="color:var(--tc)">10/09 · SM에서 배움 →</a></div></div><div class="gcard" data-track="sm" style="--tc:var(--sm)">
+<div class="k">작업결과서</div><div class="d">운영 작업의 일시·대상·내용·확인 결과를 기록한 문서</div>
+<div class="s"><a href="2026-10-09/아침공부.html" style="color:var(--tc)">10/09 · SM에서 배움 →</a></div></div><div class="gcard" data-track="net" style="--tc:var(--net)">
 <div class="k">포트 (Port)</div><div class="d">한 서버 안에서 어떤 서비스로 갈지 구분하는 번호. 예: 80(HTTP), 443(HTTPS), 8080(WAS)</div>
-<div class="s"><a href="2026-10-08/아침공부.html" style="color:var(--tc)">10/08 · 네트워크에서 배움 →</a></div></div></div></section>
+<div class="s"><a href="2026-10-08/아침공부.html" style="color:var(--tc)">10/08 · 네트워크에서 배움 →</a></div></div><div class="gcard" data-track="sm" style="--tc:var(--sm)">
+<div class="k">형상관리</div><div class="d">소스·문서의 버전과 변경 이력을 관리하는 것 (Git, SVN 등)</div>
+<div class="s"><a href="2026-10-09/아침공부.html" style="color:var(--tc)">10/09 · SM에서 배움 →</a></div></div></div></section>
 </main></div><script>(function(){var f="all",q=document.getElementById("q");
 function ap(){var s=q.value.trim().toLowerCase();document.querySelectorAll("[data-track]").forEach(function(el){
 el.style.display=((f==="all"||el.dataset.track===f)&&(!s||el.textContent.toLowerCase().indexOf(s)>=0))?"":"none";});}

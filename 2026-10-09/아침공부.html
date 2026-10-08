@@ -1,0 +1,135 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>10/09 · SM 산출물 체계 한눈에</title>
+<link rel="stylesheet" href="../assets/style.css"></head>
+<body class="sm" data-root="../" data-path="2026-10-09/아침공부.html">
+<div class="page">
+<main>
+  <div class="topbar"><a href="../index.html">← 메인</a><a href="../용어집.html">📖 용어집 전체</a></div>
+
+  <section class="hero">
+    <div class="chips"><span class="chip">SM 실무</span><span class="chip">Day 2</span><span class="chip">10/09 (금)</span><span class="chip">⏱ 15분</span></div>
+    <h1>SM 산출물 체계 한눈에</h1>
+    <p class="lead">변경 1건이 처리될 때 어떤 문서가 왜 남는지, 흐름으로 정리하기</p>
+    <div class="steps"><a href="#review">① 복습</a><a href="#concept">② 개념</a><a href="#lab">③ 양식</a><a href="#work">④ 실무</a><a href="#quiz">⑤ 퀴즈</a><a href="#next">⑥ 예습</a></div>
+  </section>
+
+  <div class="grid">
+    <!-- ① 복습 -->
+    <section class="card span2" id="review">
+      <div class="card-h"><span class="ic">🔁</span>워밍업 복습<small>어제 2문항 + 기본기 1문항</small></div>
+      <div class="tiles c3">
+        <div class="tile"><div class="from">10/08 · 네트워크</div>
+          <p>다른 서버로 연결 테스트를 했더니 한참 기다리다 <b>timed out</b>. 가장 먼저 의심할 곳은?</p>
+          <details><summary>정답</summary><div><b>방화벽.</b> 패킷이 중간에서 버려진 것. 출발지·목적지 IP, 포트를 정리해 방화벽 정책을 확인·신청합니다.</div></details></div>
+        <div class="tile"><div class="from">10/08 · 네트워크</div>
+          <p>WAS를 띄웠는데 외부에서만 접속이 안 된다. <code>ss -tlnp</code>에서 무엇을 확인할까?</p>
+          <details><summary>정답</summary><div>LISTEN 주소가 <code>127.0.0.1</code>인지 확인. 루프백에만 바인딩돼 있으면 <code>0.0.0.0</code>(또는 서버 IP)으로 바꿔야 합니다.</div></details></div>
+        <div class="tile"><div class="from">기본기 · DB</div>
+          <p><code>COUNT(*)</code>와 <code>COUNT(컬럼)</code>의 결과가 다를 수 있는 이유는?</p>
+          <details><summary>정답</summary><div><code>COUNT(컬럼)</code>은 <b>NULL을 세지 않습니다.</b> 전체 행 수가 필요하면 <code>COUNT(*)</code>.</div></details></div>
+      </div>
+    </section>
+
+    <!-- ② 개념 -->
+    <section class="card span2" id="concept">
+      <div class="card-h"><span class="ic">💡</span>개념 — 변경 1건의 흐름과 단계별 산출물</div>
+      <div class="tiles c5">
+        <div class="tile"><div class="tt"><span class="n">1</span>요청 접수</div>무엇을, 왜, 언제까지<span class="doc">📄 서비스 요청서(SR)</span></div>
+        <div class="tile"><div class="tt"><span class="n">2</span>분석</div>어디까지 영향이 가나<span class="doc">📄 영향도 분석서</span></div>
+        <div class="tile"><div class="tt"><span class="n">3</span>개발·테스트</div>고친 것이 맞게 동작하나<span class="doc">📄 테스트 결과서</span></div>
+        <div class="tile"><div class="tt"><span class="n">4</span>이행(배포)</div>언제·어떻게 반영, 실패 시 원복<span class="doc">📄 이행계획서</span></div>
+        <div class="tile"><div class="tt"><span class="n">5</span>완료</div>무엇을 했고 결과는<span class="doc">📄 작업결과서</span></div>
+      </div>
+      <div class="info">📌 산출물은 <b>"제대로 했다"는 증거</b>입니다. 문제가 생겼을 때 누가·언제·무엇을·왜 바꿨는지 추적할 수 있게 해 줍니다. 소스 변경 이력은 <b>형상관리</b>(Git/SVN)로 함께 남깁니다.</div>
+      <p style="margin:16px 0 8px;font-weight:700">산출물은 크게 두 종류로 나뉩니다</p>
+      <div class="tiles c2">
+        <div class="tile ok"><div class="tt">수시 산출물 — 건마다</div>요청서 · 영향도 분석서 · 테스트 결과서 · 이행계획서 · 작업결과서 · <b>장애보고서</b>(장애 발생 시)</div>
+        <div class="tile warn"><div class="tt">정기 산출물 — 주기마다</div><b>월간 운영보고서</b>(처리 건수, SLA 지표, 장애 현황) · 정기점검 결과 · 백업·보안 점검 결과</div>
+      </div>
+    </section>
+
+    <!-- ③ 양식 -->
+    <section class="card" id="lab">
+      <div class="card-h"><span class="ic">🧩</span>영향도 분석 — 이것만은 체크</div>
+      <ul class="checks">
+        <li><b>화면·기능</b>: 수정 프로그램을 호출하는 다른 화면/배치가 있나</li>
+        <li><b>DB</b>: 테이블·컬럼 변경 시 같은 테이블을 쓰는 쿼리·뷰·프로시저</li>
+        <li><b>연계</b>: 외부 기관·타 시스템 인터페이스에 영향이 있나</li>
+        <li><b>데이터</b>: 기존 데이터 보정(마이그레이션)이 필요한가</li>
+        <li><b>운영</b>: 서비스 중단 필요 여부, 작업 시간대</li>
+      </ul>
+      <div class="tip">💡 영향 범위를 찾을 땐 소스 전체에서 <code>grep -rn "프로그램ID 또는 테이블명"</code>으로 호출처를 먼저 뽑아 보세요.</div>
+    </section>
+    <section class="card">
+      <div class="card-h"><span class="ic">📝</span>작업결과서 기본 항목 (일반 양식)</div>
+<pre><code><span class="c"># 작업결과서</span>
+요청번호   : SR-2026-0001
+작업명     : 주문 조회 화면 검색조건 추가
+작업일시   : 2026-10-09 18:00 ~ 18:30
+작업자/확인자 : 담당 개발자 / 고객 담당자
+대상       : WAS 1·2호기, OrderController 외 2본
+작업내용   : 소스 배포 → WAS 재기동
+사전/사후 확인 : 기동 로그 정상, 화면 조회 확인
+결과       : 정상 완료 (롤백 없음)
+첨부       : 확인 화면 캡처, 배포 파일 목록</code></pre>
+      <div class="tip">⚠️ "정상 완료" 한 줄보다 <b>무엇으로 확인했는지</b>(로그, 화면, 쿼리 결과)가 남아야 나중에 증거가 됩니다.</div>
+    </section>
+
+    <!-- ④ 실무 -->
+    <section class="card" id="work">
+      <div class="card-h"><span class="ic">🧾</span>실무 팁 (SM 관점)</div>
+      <ul class="checks">
+        <li>이행계획서에 <b>롤백 절차</b>와 "언제 롤백을 결정하는지" 기준을 꼭 적기</li>
+        <li>요청번호(SR)를 커밋 메시지·작업결과서·배포 목록에 <b>똑같이</b> 남기면 추적이 쉬워요</li>
+        <li>테스트 결과서는 "성공"만이 아니라 <b>입력값·기대값·실제값</b>을 남기기</li>
+        <li>어제 배운 방화벽 확인 캡처처럼, <b>작업 전/후 화면</b>은 그때그때 저장</li>
+      </ul>
+    </section>
+
+    <!-- ⑤ 퀴즈 -->
+    <section class="card" id="quiz">
+      <div class="card-h"><span class="ic">✏️</span>오늘의 퀴즈<small>다음 복습에 다시 나와요</small></div>
+      <div class="qlist">
+        <div class="tile"><p><b>Q1.</b> 개발에 들어가기 전, 변경이 다른 화면·배치·연계에 미치는 범위를 정리하는 문서는?</p>
+          <details><summary>정답</summary><div><b>영향도 분석서.</b> 테스트 범위도 여기서 정해집니다.</div></details></div>
+        <div class="tile"><p><b>Q2.</b> 이행계획서에서 자주 빠지지만 장애 때 가장 중요한 항목은?</p>
+          <details><summary>정답</summary><div><b>롤백(원복) 절차와 판단 기준.</b> 원래 파일 백업 위치, 원복 순서, 소요 시간까지.</div></details></div>
+        <div class="tile"><p><b>Q3.</b> 월간 운영보고서에 들어가는 SLA 지표의 예를 두 가지 들어 보세요.</p>
+          <details><summary>정답</summary><div>요청 처리기한 준수율, 장애 복구 시간, 서비스 가용률 등.</div></details></div>
+      </div>
+    </section>
+
+    <!-- ⑥ 예습 + 한 줄 -->
+    <section class="card" id="next">
+      <div class="card-h"><span class="ic">🔭</span>다음 예습 · <span style="color:var(--dev)">개발</span></div>
+      <p style="font-size:17px;font-weight:800;margin-bottom:6px">JVM 메모리(Heap/Stack)와 GC</p>
+      <p style="color:var(--sub)">미리 생각해 보기: <code>OutOfMemoryError: Java heap space</code>가 났을 때, <b>메모리를 늘리는 것</b>이 항상 정답일까요?</p>
+      <div class="tip">객체는 어디에 만들어지고, 언제 치워지는지 다음 시간에 그림으로 봅니다.</div>
+    </section>
+    <section class="card summary"><div><small>오늘 한 줄 정리</small>📌 요청 → 분석 → 테스트 → 이행 → 결과,<br>단계마다 증거 한 장.</div></section>
+  </div>
+
+  <dl id="today-terms" hidden>
+    <dt>산출물</dt><dd>사업·운영 과정에서 작성해 남기는 문서와 결과물. 작업을 제대로 했다는 증거이자 추적 근거</dd>
+    <dt>SR (Service Request)</dt><dd>서비스 요청. 변경·개선·문의 등 운영 요청 1건을 식별하는 단위로 요청번호를 붙여 관리</dd>
+    <dt>영향도 분석</dt><dd>변경이 다른 화면·배치·DB·연계 시스템에 미치는 범위를 미리 파악하는 작업</dd>
+    <dt>이행 (배포)</dt><dd>개발·테스트가 끝난 변경을 운영 환경에 반영하는 작업</dd>
+    <dt>롤백 (Rollback)</dt><dd>반영한 변경에 문제가 생겼을 때 이전 상태로 되돌리는 것</dd>
+    <dt>형상관리</dt><dd>소스·문서의 버전과 변경 이력을 관리하는 것 (Git, SVN 등)</dd>
+    <dt>SLA</dt><dd>서비스 수준 협약. 처리기한, 복구 시간, 가용률 등 지켜야 할 서비스 수준을 수치로 정한 약속</dd>
+    <dt>작업결과서</dt><dd>운영 작업의 일시·대상·내용·확인 결과를 기록한 문서</dd>
+  </dl>
+</main>
+
+<aside class="side" id="side"><div class="card">
+  <div class="card-h"><span class="ic">📖</span>용어 사전<small>/ 키로 검색</small></div>
+  <div class="tabs"><button class="on" data-m="today">오늘</button><button data-m="all">전체</button></div>
+  <input class="search" placeholder="모르는 용어 검색">
+  <div class="tlist"></div>
+</div></aside>
+</div>
+<button class="fab">📖 용어</button>
+<script src="../assets/terms.js"></script>
+<script src="../assets/app.js"></script>
+</body></html>
