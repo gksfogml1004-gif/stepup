@@ -1,0 +1,132 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>10/08 · 포트·방화벽·연결 확인</title>
+<link rel="stylesheet" href="../assets/style.css"></head>
+<body class="net" data-root="../" data-path="2026-10-08/아침공부.html">
+<div class="page">
+<main>
+  <div class="topbar"><a href="../index.html">← 메인</a><a href="../용어집.html">📖 용어집 전체</a></div>
+
+  <section class="hero">
+    <div class="chips"><span class="chip">네트워크</span><span class="chip">Day 1</span><span class="chip">10/08 (목)</span><span class="chip">⏱ 15분</span></div>
+    <h1>포트·방화벽·연결 확인</h1>
+    <p class="lead">"서버가 안 붙어요"를 들었을 때, 처음 5분 안에 원인 범위를 좁히는 법</p>
+    <div class="steps"><a href="#review">① 복습</a><a href="#concept">② 개념</a><a href="#lab">③ 실습</a><a href="#work">④ 실무</a><a href="#quiz">⑤ 퀴즈</a><a href="#next">⑥ 예습</a></div>
+  </section>
+
+  <div class="grid">
+    <!-- ① 복습 -->
+    <section class="card span2" id="review">
+      <div class="card-h"><span class="ic">🔁</span>워밍업 복습<small>첫날이라 트랙별 기본기 진단</small></div>
+      <div class="tiles c3">
+        <div class="tile"><div class="from">DB</div>
+          <p>인덱스 컬럼에 함수를 씌우면 <code>WHERE TO_CHAR(reg_dt,'YYYYMMDD') = '20261008'</code> 어떻게 될까?</p>
+          <details><summary>정답</summary><div>인덱스를 못 타고 <b>Full Scan</b>. 컬럼은 그대로 두고 값 쪽을 가공 → <code>reg_dt &gt;= TO_DATE('20261008','YYYYMMDD') AND reg_dt &lt; TO_DATE('20261009','YYYYMMDD')</code></div></details></div>
+        <div class="tile"><div class="from">서버</div>
+          <p>디스크가 꽉 찼다는 알람! 가장 먼저 칠 명령어 두 개는?</p>
+          <details><summary>정답</summary><div><code>df -h</code>로 어느 파티션인지 → <code>du -sh /경로/* | sort -h</code>로 범인 찾기. 대개 로그 파일.</div></details></div>
+        <div class="tile"><div class="from">개발</div>
+          <p>MyBatis <code>#{}</code>와 <code>${}</code>의 차이와, 위험한 쪽은?</p>
+          <details><summary>정답</summary><div><code>#{}</code>는 바인딩(<code>?</code>), <code>${}</code>는 문자열 치환. <b><code>${}</code>는 SQL 인젝션 위험</b> → 꼭 필요하면 화이트리스트 검증.</div></details></div>
+      </div>
+    </section>
+
+    <!-- ② 개념 -->
+    <section class="card span2" id="concept">
+      <div class="card-h"><span class="ic">💡</span>개념 — 연결 문제는 3단계로 의심한다</div>
+      <div class="flow">
+        <div class="tile"><div class="tt"><span class="n">1</span>IP 도달</div>상대 서버까지 길이 있나?<small><code>ping</code> <code>tracert</code><br>실패 → 라우팅, 망 분리, ICMP 차단</small></div>
+        <div class="arrow">→</div>
+        <div class="tile"><div class="tt"><span class="n">2</span>포트 오픈</div>그 포트로 TCP 연결이 되나?<small><code>Test-NetConnection</code> <code>nc</code><br>실패 → <b>방화벽</b>, 서비스 미기동</small></div>
+        <div class="arrow">→</div>
+        <div class="tile"><div class="tt"><span class="n">3</span>서비스 응답</div>연결 후 정상 응답이 오나?<small><code>curl</code>, 로그<br>실패 → 애플리케이션, 인증서, URL</small></div>
+      </div>
+      <div class="info">📌 <b>ping 실패 ≠ 서버 다운.</b> 보안상 ICMP를 막아 둔 곳이 많아요. 판단은 ② 포트 체크로 합니다.</div>
+      <p style="margin:16px 0 8px;font-weight:700">포트 연결 실패 메시지, 두 가지는 뜻이 완전히 다릅니다</p>
+      <div class="tiles c2">
+        <div class="tile ok"><div class="tt">Connection refused</div>서버까지는 <b>도착</b>했지만 그 포트를 아무도 안 듣고 있음<br>→ <b>서비스 미기동·포트 오타</b> (우리 쪽 확인)</div>
+        <div class="tile warn"><div class="tt">Connection timed out</div>중간에서 패킷이 <b>버려져</b> 응답 자체가 없음<br>→ <b>방화벽</b> (망/보안팀에 신청)</div>
+      </div>
+    </section>
+
+    <!-- ③ 실습 -->
+    <section class="card" id="lab">
+      <div class="card-h"><span class="ic">🪟</span>실습 · Windows (PowerShell)</div>
+<pre><code><span class="c"># 포트 연결 테스트 (telnet 없어도 OK)</span>
+Test-NetConnection 192.0.2.10 -Port 8080
+
+<span class="c"># 결과에서 이 줄만 보면 됨</span>
+<span class="c"># TcpTestSucceeded : True  → 열림</span>
+<span class="c"># TcpTestSucceeded : False → 막힘/미기동</span></code></pre>
+      <div class="tip">💡 빠르게 쓰려면 <code>tnc 192.0.2.10 -p 8080</code> (축약형)</div>
+    </section>
+    <section class="card">
+      <div class="card-h"><span class="ic">🐧</span>실습 · Linux</div>
+<pre><code><span class="c"># 포트 연결 테스트</span>
+nc -zv 192.0.2.10 8080
+<span class="c"># nc가 없을 때</span>
+timeout 3 bash -c '&lt;/dev/tcp/192.0.2.10/8080' &amp;&amp; echo OPEN || echo FAIL
+<span class="c"># 내 서버에서 이 포트를 누가 듣나</span>
+ss -tlnp | grep 8080
+<span class="c"># 서비스 응답 확인</span>
+curl -v http://192.0.2.10:8080/health</code></pre>
+      <div class="tip">⚠️ <code>ss</code> 결과가 <code>127.0.0.1:8080</code>이면 서버 자신만 접속 가능. 외부 접속은 <code>0.0.0.0:8080</code>이어야 해요.</div>
+    </section>
+
+    <!-- ④ 실무 -->
+    <section class="card" id="work">
+      <div class="card-h"><span class="ic">🧾</span>실무 팁 (SM 관점)</div>
+      <ul class="checks">
+        <li><b>방화벽 신청서</b> 필수 항목: 출발지 IP · 목적지 IP · 포트 · 프로토콜(TCP) · 용도 · 기간</li>
+        <li>신청 전 timeout 결과를 <b>캡처</b>해 두면 처리가 빨라요</li>
+        <li>오픈 완료 연락 → 같은 명령으로 <b>재확인</b> → 작업결과서에 캡처 첨부</li>
+        <li>장애보고서 원인란은 구체적으로<br><code>A→B 8080/TCP 방화벽 정책 미등록 (timeout 확인)</code></li>
+      </ul>
+    </section>
+
+    <!-- ⑤ 퀴즈 -->
+    <section class="card" id="quiz">
+      <div class="card-h"><span class="ic">✏️</span>오늘의 퀴즈<small>내일 복습에 다시 나와요</small></div>
+      <div class="qlist">
+        <div class="tile"><p><b>Q1.</b> ping은 실패, <code>Test-NetConnection -Port 443</code>은 성공. 서버 상태는?</p>
+          <details><summary>정답</summary><div>정상. ICMP만 막혀 있고 443 서비스는 살아 있음.</div></details></div>
+        <div class="tile"><p><b>Q2.</b> <code>Connection refused</code>. 방화벽 신청부터 해야 할까?</p>
+          <details><summary>정답</summary><div>아니요. 서버까지는 도달 → 서비스 기동 여부·포트 번호부터 확인.</div></details></div>
+        <div class="tile"><p><b>Q3.</b> <code>127.0.0.1:9090 LISTEN</code>. 다른 서버에서 붙을 수 있을까?</p>
+          <details><summary>정답</summary><div>불가. 루프백에만 바인딩 → 바인드 주소를 <code>0.0.0.0</code>(또는 서버 IP)으로 변경.</div></details></div>
+      </div>
+    </section>
+
+    <!-- ⑥ 예습 + 한 줄 -->
+    <section class="card" id="next">
+      <div class="card-h"><span class="ic">🔭</span>내일 예습 · <span style="color:var(--sm)">SM 실무</span></div>
+      <p style="font-size:17px;font-weight:800;margin-bottom:6px">SM 산출물 체계 한눈에</p>
+      <p style="color:var(--sub)">미리 생각해 보기: 지금 사업에서 <b>"변경 1건"</b>이 처리될 때 남는 문서는 몇 개인가요?</p>
+      <div class="tip">요청서 → 영향도 분석 → 테스트 결과서 → 작업 결과서 … 내일 표준 흐름과 비교해 봅니다.</div>
+    </section>
+    <section class="card summary"><div><small>오늘 한 줄 정리</small>📌 refused는 서비스,<br>timeout은 방화벽.</div></section>
+  </div>
+
+  <!-- 오늘 용어 (사이드바 데이터) -->
+  <dl id="today-terms" hidden>
+    <dt>포트 (Port)</dt><dd>한 서버 안에서 어떤 서비스로 갈지 구분하는 번호. 예: 80(HTTP), 443(HTTPS), 8080(WAS)</dd>
+    <dt>ICMP</dt><dd>ping이 사용하는 프로토콜. 보안상 차단된 경우가 많아 ping 실패 ≠ 서버 다운</dd>
+    <dt>Connection refused</dt><dd>서버에는 도달했지만 해당 포트에서 듣는 프로세스가 없음</dd>
+    <dt>Connection timed out</dt><dd>응답이 아예 없음. 중간 방화벽에서 패킷이 버려지는 경우가 대부분</dd>
+    <dt>LISTEN</dt><dd>프로세스가 특정 포트에서 연결을 기다리는 상태 (ss -tlnp로 확인)</dd>
+    <dt>루프백 (127.0.0.1)</dt><dd>자기 자신을 가리키는 주소. 여기에만 바인딩하면 외부 접속 불가</dd>
+    <dt>0.0.0.0 바인딩</dt><dd>서버의 모든 네트워크 인터페이스에서 연결을 받겠다는 뜻</dd>
+  </dl>
+</main>
+
+<aside class="side" id="side"><div class="card">
+  <div class="card-h"><span class="ic">📖</span>용어 사전<small>/ 키로 검색</small></div>
+  <div class="tabs"><button class="on" data-m="today">오늘</button><button data-m="all">전체</button></div>
+  <input class="search" placeholder="모르는 용어 검색">
+  <div class="tlist"></div>
+</div></aside>
+</div>
+<button class="fab">📖 용어</button>
+<script src="../assets/terms.js"></script>
+<script src="../assets/app.js"></script>
+</body></html>
