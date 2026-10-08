@@ -145,3 +145,67 @@ details>div{font-size:14.5px;background:var(--card);border-radius:8px;padding:8p
   .stats{grid-template-columns:repeat(2,minmax(0,1fr))} .tracks{grid-template-columns:minmax(0,1fr)}
   .page{padding:12px} .hero h1{font-size:21px}
 }
+/* ===== 모바일 최적화 ===== */
+:not(pre)>code{-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.mnav,.secnav,.side .close,.backdrop{display:none}
+@media (max-width:720px){
+  body{font-size:15px;line-height:1.7}
+  .page{padding:10px 10px 0;gap:10px}
+  .topbar{margin:2px 4px 10px}
+  .card{padding:14px;border-radius:12px}
+  .grid{gap:10px}
+  .card-h{flex-wrap:wrap;margin-bottom:10px;font-size:15.5px}
+  .card-h .ic{width:26px;height:26px;font-size:14px}
+  .card-h small{margin-left:36px;width:100%;margin-top:-6px}
+  /* 헤더 배너 축소 */
+  .hero{padding:16px;border-radius:14px;margin-bottom:10px}
+  .hero h1{font-size:20px;margin:8px 0 2px}
+  .hero .lead{font-size:14px}
+  .hero .chips{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+  .chip{white-space:nowrap;font-size:11.5px}
+  body.mtabs .hero .steps{display:none}
+  /* 타일 */
+  .tiles{gap:8px}
+  .tile{padding:12px}
+  .flow{gap:8px} .flow .arrow{display:none}
+  .flow .tile small{margin-top:4px}
+  .tip,.info{font-size:14px;padding:10px 12px}
+  /* 코드: 잘리지 않고 줄바꿈 */
+  pre{font-size:12.5px;padding:12px;white-space:pre-wrap;word-break:break-all}
+  :not(pre)>code{word-break:break-all;font-size:.86em}
+  .summary{font-size:17px;padding:20px 14px}
+  /* 하단 섹션 탭 (공부 페이지) */
+  body.mtabs{padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+  body.mtabs .grid>section:not(.on){display:none}
+  body.mtabs .fab{display:none}
+  .mnav{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:45;background:var(--card);border-top:1px solid var(--line);
+    padding:6px 4px calc(6px + env(safe-area-inset-bottom));box-shadow:0 -4px 16px rgba(0,0,0,.06)}
+  .mnav button{flex:1;border:0;background:none;font:inherit;color:var(--sub);font-size:11px;font-weight:700;padding:4px 0;border-radius:10px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer}
+  .mnav button b{display:grid;place-items:center;width:24px;height:24px;border-radius:8px;font-size:12px;background:var(--soft)}
+  .mnav button.on{color:var(--c)} .mnav button.on b{background:var(--c);color:#fff}
+  .secnav{display:flex;gap:8px;margin-top:10px}
+  .secnav button{flex:1;border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:12px;padding:13px;font:inherit;font-weight:800;cursor:pointer}
+  .secnav button.pri{background:var(--c);color:#fff;border-color:var(--c)}
+  .secnav button:disabled{visibility:hidden}
+  /* 용어 사전: 바텀시트 */
+  .side{top:auto;left:0;right:0;bottom:0;width:100%;height:78vh;padding:0;transform:translateY(105%)}
+  .side .card{border-radius:18px 18px 0 0;padding:14px 14px calc(14px + env(safe-area-inset-bottom))}
+  .side .close{display:block;margin-left:auto;border:0;background:var(--soft);color:var(--text);border-radius:8px;padding:4px 10px;font:inherit;font-size:13px;font-weight:700}
+  .side .card-h small{display:none}
+  .backdrop{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:49}
+  .side.open+.backdrop{display:block}
+  .term:hover::after{display:none}
+  /* 메인 */
+  .stats{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:12px}
+  .stat{padding:8px;border-radius:10px;text-align:center}
+  .stat b{font-size:17px} .stat span{font-size:10.5px}
+  .tracks{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:10px;margin:0 -14px;padding:0 14px 6px;scrollbar-width:none}
+  .trk{flex:0 0 80%;scroll-snap-align:start}
+  .dgrid,.ggrid{grid-template-columns:minmax(0,1fr);gap:8px}
+  .dcard,.gcard{padding:12px}
+  .filters{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+  .filters button{white-space:nowrap}
+  .filters .search{order:-1;flex:0 0 100%}
+  .filters{flex-wrap:wrap}
+  .filters button{flex:none}
+}

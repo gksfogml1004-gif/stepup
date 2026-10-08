@@ -56,3 +56,37 @@
   var fab=document.querySelector(".fab"); if(fab) fab.onclick=function(){side.classList.toggle("open")};
   document.addEventListener("keydown",function(e){ if(e.key==="/"&&document.activeElement!==q){e.preventDefault();q.focus();} if(e.key==="Escape") side.classList.remove("open"); });
 })();
+
+/* 모바일: 섹션 탭 + 바텀시트 용어 사전 */
+(function(){
+  var grid=document.querySelector("main .grid"), steps=document.querySelectorAll(".hero .steps a"), side=document.getElementById("side");
+  if(side){
+    var h=side.querySelector(".card-h"), c=document.createElement("button"); c.className="close"; c.textContent="닫기";
+    c.onclick=function(){side.classList.remove("open")}; h.appendChild(c);
+    var bd=document.createElement("div"); bd.className="backdrop"; bd.onclick=c.onclick; side.after(bd);
+  }
+  if(!grid||!steps.length) return;
+  var secs=[]; steps.forEach(function(a){secs.push({id:a.getAttribute("href").slice(1),label:a.textContent.replace(/^[^\s]+\s*/,"")})});
+  var cur=secs[0].id;
+  [].forEach.call(grid.children,function(el){ if(el.id&&secs.some(function(s){return s.id===el.id})) cur=el.id; el.dataset.sec=cur; });
+  var nav=document.createElement("nav"); nav.className="mnav";
+  nav.innerHTML=secs.map(function(s,i){return '<button data-s="'+s.id+'"><b>'+(i+1)+'</b>'+s.label+'</button>'}).join("")+'<button data-t="1"><b>📖</b>용어</button>';
+  document.body.appendChild(nav);
+  var sn=document.createElement("div"); sn.className="secnav"; sn.innerHTML='<button data-d="-1">← 이전</button><button class="pri" data-d="1">다음 →</button>'; grid.after(sn);
+  var idx=0, mq=window.matchMedia("(max-width:720px)");
+  function show(i,scroll){
+    idx=Math.max(0,Math.min(secs.length-1,i));
+    [].forEach.call(grid.children,function(el){el.classList.toggle("on",el.dataset.sec===secs[idx].id)});
+    nav.querySelectorAll("[data-s]").forEach(function(b,j){b.classList.toggle("on",j===idx)});
+    sn.children[0].disabled=idx===0;
+    sn.children[1].textContent=idx===secs.length-1?"메인으로 →":"다음: "+secs[idx+1].label+" →";
+    if(scroll) window.scrollTo({top:grid.getBoundingClientRect().top+window.scrollY-10,behavior:"smooth"});
+  }
+  nav.onclick=function(e){var b=e.target.closest("button"); if(!b) return;
+    if(b.dataset.t){side.classList.toggle("open");return;}
+    show(secs.findIndex(function(s){return s.id===b.dataset.s}),true);};
+  sn.onclick=function(e){var b=e.target.closest("button"); if(!b) return; var d=+b.dataset.d;
+    if(d>0&&idx===secs.length-1){location.href=(document.body.dataset.root||"")+"index.html";return;} show(idx+d,true);};
+  function apply(){ document.body.classList.toggle("mtabs",mq.matches); if(mq.matches) show(idx,false); }
+  mq.addEventListener?mq.addEventListener("change",apply):mq.addListener(apply); apply();
+})();
