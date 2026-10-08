@@ -1,132 +1,82 @@
 <!doctype html><html lang="ko"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>10/08 · 포트·방화벽·연결 확인</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>10/08 네트워크 · 포트·방화벽·연결 확인</title><meta name="description" content="📌 refused는 서비스, timeout은 방화벽. — 개발 15분 + 커뮤니케이션 · 자격증 · 기술영어">
+<meta property="og:type" content="website"><meta property="og:site_name" content="아침 개발공부">
+<meta property="og:title" content="10/08 네트워크 · 포트·방화벽·연결 확인"><meta property="og:description" content="📌 refused는 서비스, timeout은 방화벽. — 개발 15분 + 커뮤니케이션 · 자격증 · 기술영어">
+<meta property="og:image" content="https://stepup-alpha-ten.vercel.app/assets/og/net.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta property="og:url" content="https://stepup-alpha-ten.vercel.app/2026-10-08/아침공부.html"><meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#7048e8"><link rel="manifest" href="../manifest.webmanifest">
+<link rel="apple-touch-icon" href="../assets/icons/apple-touch-icon.png"><link rel="icon" type="image/png" href="../assets/icons/icon-192.png">
 <link rel="stylesheet" href="../assets/style.css"></head>
-<body class="net" data-root="../" data-path="2026-10-08/아침공부.html">
-<div class="page">
-<main>
-  <div class="topbar"><a href="../index.html">← 메인</a><a href="../용어집.html">📖 용어집 전체</a></div>
-
-  <section class="hero">
-    <div class="chips"><span class="chip">네트워크</span><span class="chip">Day 1</span><span class="chip">10/08 (목)</span><span class="chip">⏱ 15분</span></div>
-    <h1>포트·방화벽·연결 확인</h1>
-    <p class="lead">"서버가 안 붙어요"를 들었을 때, 처음 5분 안에 원인 범위를 좁히는 법</p>
-    <div class="steps"><a href="#review">① 복습</a><a href="#concept">② 개념</a><a href="#lab">③ 실습</a><a href="#work">④ 실무</a><a href="#quiz">⑤ 퀴즈</a><a href="#next">⑥ 예습</a></div>
-  </section>
-
-  <div class="grid">
-    <!-- ① 복습 -->
-    <section class="card span2" id="review">
-      <div class="card-h"><span class="ic">🔁</span>워밍업 복습<small>첫날이라 트랙별 기본기 진단</small></div>
-      <div class="tiles c3">
-        <div class="tile"><div class="from">DB</div>
-          <p>인덱스 컬럼에 함수를 씌우면 <code>WHERE TO_CHAR(reg_dt,'YYYYMMDD') = '20261008'</code> 어떻게 될까?</p>
-          <details><summary>정답</summary><div>인덱스를 못 타고 <b>Full Scan</b>. 컬럼은 그대로 두고 값 쪽을 가공 → <code>reg_dt &gt;= TO_DATE('20261008','YYYYMMDD') AND reg_dt &lt; TO_DATE('20261009','YYYYMMDD')</code></div></details></div>
-        <div class="tile"><div class="from">서버</div>
-          <p>디스크가 꽉 찼다는 알람! 가장 먼저 칠 명령어 두 개는?</p>
-          <details><summary>정답</summary><div><code>df -h</code>로 어느 파티션인지 → <code>du -sh /경로/* | sort -h</code>로 범인 찾기. 대개 로그 파일.</div></details></div>
-        <div class="tile"><div class="from">개발</div>
-          <p>MyBatis <code>#{}</code>와 <code>${}</code>의 차이와, 위험한 쪽은?</p>
-          <details><summary>정답</summary><div><code>#{}</code>는 바인딩(<code>?</code>), <code>${}</code>는 문자열 치환. <b><code>${}</code>는 SQL 인젝션 위험</b> → 꼭 필요하면 화이트리스트 검증.</div></details></div>
-      </div>
-    </section>
-
-    <!-- ② 개념 -->
-    <section class="card span2" id="concept">
-      <div class="card-h"><span class="ic">💡</span>개념 — 연결 문제는 3단계로 의심한다</div>
-      <div class="flow">
-        <div class="tile"><div class="tt"><span class="n">1</span>IP 도달</div>상대 서버까지 길이 있나?<small><code>ping</code> <code>tracert</code><br>실패 → 라우팅, 망 분리, ICMP 차단</small></div>
-        <div class="arrow">→</div>
-        <div class="tile"><div class="tt"><span class="n">2</span>포트 오픈</div>그 포트로 TCP 연결이 되나?<small><code>Test-NetConnection</code> <code>nc</code><br>실패 → <b>방화벽</b>, 서비스 미기동</small></div>
-        <div class="arrow">→</div>
-        <div class="tile"><div class="tt"><span class="n">3</span>서비스 응답</div>연결 후 정상 응답이 오나?<small><code>curl</code>, 로그<br>실패 → 애플리케이션, 인증서, URL</small></div>
-      </div>
-      <div class="info">📌 <b>ping 실패 ≠ 서버 다운.</b> 보안상 ICMP를 막아 둔 곳이 많아요. 판단은 ② 포트 체크로 합니다.</div>
-      <p style="margin:16px 0 8px;font-weight:700">포트 연결 실패 메시지, 두 가지는 뜻이 완전히 다릅니다</p>
-      <div class="tiles c2">
-        <div class="tile ok"><div class="tt">Connection refused</div>서버까지는 <b>도착</b>했지만 그 포트를 아무도 안 듣고 있음<br>→ <b>서비스 미기동·포트 오타</b> (우리 쪽 확인)</div>
-        <div class="tile warn"><div class="tt">Connection timed out</div>중간에서 패킷이 <b>버려져</b> 응답 자체가 없음<br>→ <b>방화벽</b> (망/보안팀에 신청)</div>
-      </div>
-    </section>
-
-    <!-- ③ 실습 -->
-    <section class="card" id="lab">
-      <div class="card-h"><span class="ic">🪟</span>실습 · Windows (PowerShell)</div>
-<pre><code><span class="c"># 포트 연결 테스트 (telnet 없어도 OK)</span>
+<body class="net" data-root="../" data-path="2026-10-08/아침공부.html"><div class="page"><main>
+<div class="topbar"><a href="../index.html">← 메인</a><span class="daynav"><a href="../2026-10-09/아침공부.html">10/09 ›</a></span><span class="daynav"><a href="../치트시트.html">📋 치트시트</a><a href="../용어집.html">📖 용어집</a></span></div>
+<section class="hero"><div class="chips"><span class="chip">네트워크</span><span class="chip">Day 1</span><span class="chip">10/08 (목)</span><span class="chip">⏱ 15분</span><span class="chip lv">기초</span></div>
+<h1>포트·방화벽·연결 확인</h1><p class="lead">"서버가 안 붙어요"를 들었을 때, 처음 5분 안에 원인 범위를 좁히는 법</p><div class="steps"><a href="#review">① 복습</a><a href="#concept">② 개념</a><a href="#lab">③ 실습</a><a href="#work">④ 실무</a><a href="#quiz">⑤ 퀴즈</a><a href="#next">⑥ 예습</a></div></section>
+<div class="ptabs"><button data-p="dev">📘 개발공부</button><button data-p="comm">💬 커뮤니케이션</button><button data-p="cert">🎓 자격증</button><button data-p="eng">🌐 기술영어</button></div>
+<div class="panel" data-p="dev"><div class="grid">
+<section class="card span2" id="review"><div class="card-h"><span class="ic">🔁</span>워밍업 복습<small>첫날이라 트랙별 기본기 진단</small></div><div class="tiles c3"><div class="tile"><div class="from">기본기 · DB</div><p>인덱스 컬럼에 함수를 씌우면 <code>WHERE TO_CHAR(reg_dt,'YYYYMMDD') = '20261008'</code> 어떻게 될까?</p>
+<details><summary>정답</summary><div>인덱스를 못 타고 <b>Full Scan</b>. 컬럼은 그대로 두고 값 쪽을 가공 → <code>reg_dt &gt;= TO_DATE('20261008','YYYYMMDD') AND reg_dt &lt; TO_DATE('20261009','YYYYMMDD')</code></div></details></div><div class="tile"><div class="from">기본기 · 서버</div><p>디스크가 꽉 찼다는 알람! 가장 먼저 칠 명령어 두 개는?</p>
+<details><summary>정답</summary><div><code>df -h</code>로 어느 파티션인지 → <code>du -sh /경로/* | sort -h</code>로 범인 찾기. 대개 로그 파일.</div></details></div><div class="tile"><div class="from">기본기 · 개발</div><p>MyBatis <code>#{}</code>와 <code>${}</code>의 차이와, 위험한 쪽은?</p>
+<details><summary>정답</summary><div><code>#{}</code>는 바인딩(<code>?</code>), <code>${}</code>는 문자열 치환. <b><code>${}</code>는 SQL 인젝션 위험</b> → 꼭 필요하면 화이트리스트 검증.</div></details></div></div></section>
+<section class="card span2" id="concept"><div class="card-h"><span class="ic">💡</span>개념 — 연결 문제는 3단계로 의심한다</div>
+<div class="flow"><div class="tile"><div class="tt"><span class="n">1</span>IP 도달</div>상대 서버까지 길이 있나?<small><code>ping</code> <code>tracert</code><br>실패 → 라우팅, 망 분리, ICMP 차단</small></div><div class="arrow">→</div><div class="tile"><div class="tt"><span class="n">2</span>포트 오픈</div>그 포트로 TCP 연결이 되나?<small><code>Test-NetConnection</code> <code>nc</code><br>실패 → <b>방화벽</b>, 서비스 미기동</small></div><div class="arrow">→</div><div class="tile"><div class="tt"><span class="n">3</span>서비스 응답</div>연결 후 정상 응답이 오나?<small><code>curl</code>, 로그<br>실패 → 애플리케이션, 인증서, URL</small></div></div><div class="info">📌 <b>ping 실패 ≠ 서버 다운.</b> 보안상 ICMP를 막아 둔 곳이 많아요. 판단은 ② 포트 체크로 합니다.</div><p style="margin:16px 0 8px;font-weight:700">포트 연결 실패 메시지, 두 가지는 뜻이 완전히 다릅니다</p><div class="tiles c2"><div class="tile ok"><div class="tt">Connection refused</div>서버까지는 <b>도착</b>했지만 그 포트를 아무도 안 듣고 있음<br>→ <b>서비스 미기동·포트 오타</b> (우리 쪽 확인)</div><div class="tile warn"><div class="tt">Connection timed out</div>중간에서 패킷이 <b>버려져</b> 응답 자체가 없음<br>→ <b>방화벽</b> (망/보안팀에 신청)</div></div><details class="deep"><summary>🔬 심화 — 더 깊이 보기 (+5분)</summary><div><div class="deep-item"><b class="dt">① TCP 3-way handshake로 보면 차이가 보인다</b>정상: 클라이언트 <code>SYN</code> → 서버 <code>SYN/ACK</code> → 클라이언트 <code>ACK</code>.<br>닫힌 포트: <code>SYN</code> → 서버가 즉시 <code>RST</code> → <b>refused (바로 실패)</b>.<br>방화벽 DROP: <code>SYN</code>에 아무 응답 없음 → OS가 SYN을 몇 번 재전송하다 포기 → <b>timeout (한참 기다림)</b>. 리눅스 기본값이면 2분 가까이 걸릴 수 있어, 앱에는 보통 connect timeout을 짧게 설정합니다.</div><div class="deep-item"><b class="dt">② 예외: 방화벽인데 refused가 나는 경우</b>방화벽 정책이 <b>DROP</b>(조용히 버림)이 아니라 <b>REJECT</b>(거부 응답)로 설정돼 있으면, 방화벽이 대신 RST나 ICMP 응답을 돌려줘서 <b>바로 실패</b>합니다. "refused = 무조건 서비스 문제"가 아니라, <b>서버에서 <code>ss -tlnp</code>로 LISTEN 여부를 함께 확인</b>해야 확정할 수 있어요.</div><div class="deep-item"><b class="dt">③ 방화벽은 보통 3겹 — 어디서 막혔나</b><b>서버 자체</b>(리눅스 firewalld/iptables, Windows 방화벽) · <b>네트워크 방화벽</b>(망 구간 장비) · <b>클라우드 보안그룹</b>. 서버 방화벽만 열고 끝내는 실수가 흔합니다. 서버 안에서 자기 자신으로는 붙는데(<code>curl localhost:8080</code> OK) 밖에서 안 되면 바깥 두 겹을 의심하세요.<pre><code><span class="c"># 서버 방화벽 규칙 확인 (RHEL/Rocky 계열)</span>
+firewall-cmd --list-all
+<span class="c"># iptables 직접 사용 환경</span>
+iptables -L -n --line-numbers</code></pre></div><div class="deep-item"><b class="dt">④ 리뷰·면접에서 나오는 질문</b>Q. <b>ping은 되는데 포트 연결이 안 되는 원인 3가지?</b><br>A. ① 서비스 미기동(LISTEN 없음) ② 127.0.0.1에만 바인딩 ③ 해당 포트만 방화벽 차단. — ping(ICMP)과 TCP 포트는 별개로 허용·차단된다는 점이 핵심.</div></div></details></section><section class="card" id="lab"><div class="card-h"><span class="ic">🪟</span>실습 1 · Windows에서 포트 확인</div><pre><code><span class="c"># 포트 연결 테스트 (telnet 없어도 OK)</span>
 Test-NetConnection 192.0.2.10 -Port 8080
-
-<span class="c"># 결과에서 이 줄만 보면 됨</span>
-<span class="c"># TcpTestSucceeded : True  → 열림</span>
-<span class="c"># TcpTestSucceeded : False → 막힘/미기동</span></code></pre>
-      <div class="tip">💡 빠르게 쓰려면 <code>tnc 192.0.2.10 -p 8080</code> (축약형)</div>
-    </section>
-    <section class="card">
-      <div class="card-h"><span class="ic">🐧</span>실습 · Linux</div>
-<pre><code><span class="c"># 포트 연결 테스트</span>
-nc -zv 192.0.2.10 8080
+<span class="c"># 축약형</span>
+tnc 192.0.2.10 -p 8080</code></pre><div class="lbl2">▶ 이렇게 나오면</div><pre class="out"><code>WARNING: TCP connect to (192.0.2.10 : 8080) failed
+ComputerName     : 192.0.2.10
+RemoteAddress    : 192.0.2.10
+RemotePort       : 8080
+SourceAddress    : 192.0.2.11
+PingSucceeded    : True
+TcpTestSucceeded : False</code></pre><div class="lbl2">🔎 결과 읽는 법</div><ul class="reads"><li><code>TcpTestSucceeded : True</code>면 포트 열림, False면 막힘 또는 미기동</li><li><code>PingSucceeded : True</code> + TCP False → 길은 있는데 <b>그 포트만</b> 문제</li><li>결과가 <b>즉시</b> 나오면 refused 쪽, <b>20초 이상</b> 걸리면 방화벽(timeout) 쪽일 가능성이 큼</li><li><code>SourceAddress</code>가 방화벽 신청서의 <b>출발지 IP</b>예요</li></ul></section><section class="card"><div class="card-h"><span class="ic">🐧</span>실습 2 · Linux에서 상대 포트 확인</div><pre><code><span class="c"># 3초만 기다리고 결과 보기</span>
+nc -zv -w 3 192.0.2.10 8080
 <span class="c"># nc가 없을 때</span>
-timeout 3 bash -c '&lt;/dev/tcp/192.0.2.10/8080' &amp;&amp; echo OPEN || echo FAIL
-<span class="c"># 내 서버에서 이 포트를 누가 듣나</span>
+timeout 3 bash -c &#x27;&lt;/dev/tcp/192.0.2.10/8080&#x27; \
+  &amp;&amp; echo OPEN || echo FAIL
+<span class="c"># 응답 헤더까지 확인</span>
+curl -v --connect-timeout 3 http://192.0.2.10:8080/</code></pre><div class="lbl2">▶ 이렇게 나오면</div><pre class="out"><code># 성공
+Connection to 192.0.2.10 8080 port [tcp/http-alt] succeeded!
+# 서비스 미기동
+nc: connect to 192.0.2.10 port 8080 (tcp) failed: Connection refused
+# 방화벽 의심
+nc: connect to 192.0.2.10 port 8080 (tcp) timed out: Operation now in progress</code></pre><div class="lbl2">🔎 결과 읽는 법</div><ul class="reads"><li>메시지 끝의 <b>refused / timed out</b>만 보면 어느 쪽인지 바로 갈려요</li><li>RHEL 계열의 ncat은 <code>Ncat: Connection refused.</code>, <code>Ncat: TIMEOUT.</code>처럼 표시돼요</li><li><code>curl -v</code>에서 <code>Connected to</code>가 찍혔다면 네트워크는 통과 → 이후 HTTP 상태코드(404, 500)는 애플리케이션 문제</li></ul></section><section class="card"><div class="card-h"><span class="ic">🖥️</span>실습 3 · 서버에서 LISTEN 확인</div><pre><code><span class="c"># 어떤 프로세스가 어떤 주소:포트로 대기 중인가</span>
 ss -tlnp | grep 8080
-<span class="c"># 서비스 응답 확인</span>
-curl -v http://192.0.2.10:8080/health</code></pre>
-      <div class="tip">⚠️ <code>ss</code> 결과가 <code>127.0.0.1:8080</code>이면 서버 자신만 접속 가능. 외부 접속은 <code>0.0.0.0:8080</code>이어야 해요.</div>
-    </section>
-
-    <!-- ④ 실무 -->
-    <section class="card" id="work">
-      <div class="card-h"><span class="ic">🧾</span>실무 팁 (SM 관점)</div>
-      <ul class="checks">
-        <li><b>방화벽 신청서</b> 필수 항목: 출발지 IP · 목적지 IP · 포트 · 프로토콜(TCP) · 용도 · 기간</li>
-        <li>신청 전 timeout 결과를 <b>캡처</b>해 두면 처리가 빨라요</li>
-        <li>오픈 완료 연락 → 같은 명령으로 <b>재확인</b> → 작업결과서에 캡처 첨부</li>
-        <li>장애보고서 원인란은 구체적으로<br><code>A→B 8080/TCP 방화벽 정책 미등록 (timeout 확인)</code></li>
-      </ul>
-    </section>
-
-    <!-- ⑤ 퀴즈 -->
-    <section class="card" id="quiz">
-      <div class="card-h"><span class="ic">✏️</span>오늘의 퀴즈<small>내일 복습에 다시 나와요</small></div>
-      <div class="qlist">
-        <div class="tile"><p><b>Q1.</b> ping은 실패, <code>Test-NetConnection -Port 443</code>은 성공. 서버 상태는?</p>
-          <details><summary>정답</summary><div>정상. ICMP만 막혀 있고 443 서비스는 살아 있음.</div></details></div>
-        <div class="tile"><p><b>Q2.</b> <code>Connection refused</code>. 방화벽 신청부터 해야 할까?</p>
-          <details><summary>정답</summary><div>아니요. 서버까지는 도달 → 서비스 기동 여부·포트 번호부터 확인.</div></details></div>
-        <div class="tile"><p><b>Q3.</b> <code>127.0.0.1:9090 LISTEN</code>. 다른 서버에서 붙을 수 있을까?</p>
-          <details><summary>정답</summary><div>불가. 루프백에만 바인딩 → 바인드 주소를 <code>0.0.0.0</code>(또는 서버 IP)으로 변경.</div></details></div>
-      </div>
-    </section>
-
-    <!-- ⑥ 예습 + 한 줄 -->
-    <section class="card" id="next">
-      <div class="card-h"><span class="ic">🔭</span>내일 예습 · <span style="color:var(--sm)">SM 실무</span></div>
-      <p style="font-size:17px;font-weight:800;margin-bottom:6px">SM 산출물 체계 한눈에</p>
-      <p style="color:var(--sub)">미리 생각해 보기: 지금 사업에서 <b>"변경 1건"</b>이 처리될 때 남는 문서는 몇 개인가요?</p>
-      <div class="tip">요청서 → 영향도 분석 → 테스트 결과서 → 작업 결과서 … 내일 표준 흐름과 비교해 봅니다.</div>
-    </section>
-    <section class="card summary"><div><small>오늘 한 줄 정리</small>📌 refused는 서비스,<br>timeout은 방화벽.</div></section>
-  </div>
-
-  <!-- 오늘 용어 (사이드바 데이터) -->
-  <dl id="today-terms" hidden>
-    <dt>포트 (Port)</dt><dd>한 서버 안에서 어떤 서비스로 갈지 구분하는 번호. 예: 80(HTTP), 443(HTTPS), 8080(WAS)</dd>
-    <dt>ICMP</dt><dd>ping이 사용하는 프로토콜. 보안상 차단된 경우가 많아 ping 실패 ≠ 서버 다운</dd>
-    <dt>Connection refused</dt><dd>서버에는 도달했지만 해당 포트에서 듣는 프로세스가 없음</dd>
-    <dt>Connection timed out</dt><dd>응답이 아예 없음. 중간 방화벽에서 패킷이 버려지는 경우가 대부분</dd>
-    <dt>LISTEN</dt><dd>프로세스가 특정 포트에서 연결을 기다리는 상태 (ss -tlnp로 확인)</dd>
-    <dt>루프백 (127.0.0.1)</dt><dd>자기 자신을 가리키는 주소. 여기에만 바인딩하면 외부 접속 불가</dd>
-    <dt>0.0.0.0 바인딩</dt><dd>서버의 모든 네트워크 인터페이스에서 연결을 받겠다는 뜻</dd>
-  </dl>
-</main>
-
-<aside class="side" id="side"><div class="card">
-  <div class="card-h"><span class="ic">📖</span>용어 사전<small>/ 키로 검색</small></div>
-  <div class="tabs"><button class="on" data-m="today">오늘</button><button data-m="all">전체</button></div>
-  <input class="search" placeholder="모르는 용어 검색">
-  <div class="tlist"></div>
-</div></aside>
-</div>
-<button class="fab">📖 용어</button>
-<script src="../assets/terms.js"></script>
-<script src="../assets/app.js"></script>
-</body></html>
+<span class="c"># 구버전 서버</span>
+netstat -tlnp | grep 8080</code></pre><div class="lbl2">▶ 이렇게 나오면</div><pre class="out"><code>State  Recv-Q Send-Q Local Address:Port Peer Address:Port Process
+LISTEN 0      100          0.0.0.0:8080      0.0.0.0:*   users:((&quot;java&quot;,pid=2310,fd=45))</code></pre><div class="lbl2">🔎 결과 읽는 법</div><ul class="reads"><li><b>아무것도 안 나오면</b> 서비스가 안 떠 있거나 포트가 다름 → 기동 로그 확인</li><li><code>Local Address</code>가 <code>0.0.0.0</code>(또는 <code>*</code>, <code>[::]</code>)이면 외부 접속 가능, <code>127.0.0.1</code>이면 서버 내부만</li><li><code>Process</code>의 pid로 어떤 프로그램인지 확인 → <code>ps -fp 2310</code></li><li><code>-p</code>(프로세스 표시)는 root 권한이 있어야 다른 사용자 프로세스까지 보여요</li></ul></section><section class="card" id="work"><div class="card-h"><span class="ic">⚠️</span>흔한 실수<small>현장에서 실제로 자주 나오는 것</small></div><ul class="mist"><li><b class='dt'>ping 실패만 보고 "서버 다운"이라고 보고</b>ICMP 차단은 흔합니다. 판단은 반드시 <b>포트 연결 테스트</b>로 하고, 보고에는 어떤 테스트로 확인했는지 함께 적으세요.</li><li><b class='dt'>서버 방화벽만 열고 "조치 완료"</b>중간 네트워크 방화벽·보안그룹은 별도 신청입니다. <b>실제 호출하는 서버에서</b> 다시 테스트해 보고 완료 처리하세요.</li><li><b class='dt'>방화벽 신청서에 내 PC IP를 출발지로 적음</b>출발지는 실제로 호출하는 <b>서버(WAS)의 IP</b>입니다. 중간에 NAT가 있으면 변환된 IP가 기준이니 망 담당자에게 확인하세요.</li><li><b class='dt'>localhost로만 테스트하고 OK</b>서버 안에서 <code>curl localhost</code>가 되는 건 서비스가 떠 있다는 뜻일 뿐, <b>외부 접근</b>은 바인딩 주소와 방화벽을 따로 확인해야 해요.</li></ul></section><section class="card"><div class="card-h"><span class="ic">🧾</span>실무 팁 (SM 관점)</div>
+<ul class="checks"><li><b>방화벽 신청서</b> 필수 항목: 출발지 IP · 목적지 IP · 포트 · 프로토콜(TCP) · 용도 · 기간</li><li>신청 전 timeout 결과를 <b>캡처</b>해 두면 처리가 빨라요</li><li>오픈 완료 연락 → 같은 명령으로 <b>재확인</b> → 작업결과서에 캡처 첨부</li><li>장애보고서 원인란은 구체적으로<br><code>A→B 8080/TCP 방화벽 정책 미등록 (timeout 확인)</code></li></ul></section><section class="card" id="quiz"><div class="card-h"><span class="ic">✏️</span>오늘의 퀴즈<small>정답 확인 후 알았음/헷갈림 표시</small></div><div class="qlist"><div class="tile"><p><b>Q1.</b> ping은 실패, <code>Test-NetConnection -Port 443</code>은 성공. 서버 상태는?</p><details><summary>정답</summary><div>정상. ICMP만 막혀 있고 443 서비스는 살아 있음.<div class="chk" data-id="2026-10-08-q0"><button data-v="ok">✓ 알았음</button><button data-v="hard">? 헷갈림</button></div></div></details></div><div class="tile"><p><b>Q2.</b> <code>Connection refused</code>. 방화벽 신청부터 해야 할까?</p><details><summary>정답</summary><div>아니요. 서버까지는 도달 → 서비스 기동 여부·포트 번호부터 확인.<div class="chk" data-id="2026-10-08-q1"><button data-v="ok">✓ 알았음</button><button data-v="hard">? 헷갈림</button></div></div></details></div><div class="tile"><p><b>Q3.</b> <code>127.0.0.1:9090 LISTEN</code>. 다른 서버에서 붙을 수 있을까?</p><details><summary>정답</summary><div>불가. 루프백에만 바인딩 → 바인드 주소를 <code>0.0.0.0</code>(또는 서버 IP)으로 변경.<div class="chk" data-id="2026-10-08-q2"><button data-v="ok">✓ 알았음</button><button data-v="hard">? 헷갈림</button></div></div></details></div><div class="tile"><p><b>Q4.</b> <code>Test-NetConnection</code>이 False인데 결과가 30초 뒤에 나왔다. 무엇을 먼저 의심할까?</p><details><summary>정답</summary><div>방화벽(DROP)에 의한 timeout 가능성. 즉시 실패였다면 서비스 미기동(refused) 쪽을 먼저 봅니다.<div class="chk" data-id="2026-10-08-q3"><button data-v="ok">✓ 알았음</button><button data-v="hard">? 헷갈림</button></div></div></details></div></div></section><section class="card" id="next"><div class="card-h"><span class="ic">🔭</span>다음 예습 · <span style="color:var(--sm)">SM</span></div>
+<p style="font-size:17px;font-weight:800;margin-bottom:6px">SM 산출물 체계 한눈에</p><p style="color:var(--sub)">미리 생각해 보기: 지금 사업에서 <b>"변경 1건"</b>이 처리될 때 남는 문서는 몇 개인가요?</p>
+<div class="tip">요청서 → 영향도 분석 → 테스트 결과서 → 작업 결과서 … 내일 표준 흐름과 비교해 봅니다.</div></section>
+<section class="card summary"><div><small>오늘 한 줄 정리</small>📌 refused는 서비스, timeout은 방화벽.</div></section></div></div><div class="panel" data-p="comm"><div class="grid"><section class="card"><div class="card-h"><span class="ic">💬</span>방화벽 오픈 요청<span class="lvq">상황 1</span></div>
+<p class="situ">📍 다른 서버 API 연동 중 8080 포트 연결이 timeout. 보안 담당자에게 오픈을 요청해야 한다.</p><div class="say bad"><span class="lbl">아쉬운 예</span>방화벽 좀 열어주세요. 급합니다!</div><div class="say good"><span class="lbl">이렇게 바꿔 보기</span>[방화벽 오픈 요청] 출발지 192.0.2.11 → 목적지 192.0.2.10, TCP 8080 / 용도: 주문 API 연동 / 기간: 상시.<br>연결 테스트 결과 timeout이라 캡처 첨부드립니다. 10/10(금)까지 반영 가능할지 여쭙습니다.</div></section><section class="card"><div class="card-h"><span class="ic">💬</span>원인 파악 중 중간 공유<span class="lvq">상황 2</span></div>
+<p class="situ">📍 연동 장애 30분째. 고객 담당자가 상황을 묻는데 아직 원인은 모른다.</p><div class="say bad"><span class="lbl">아쉬운 예</span>지금 확인 중입니다. 조금만 기다려 주세요.</div><div class="say good"><span class="lbl">이렇게 바꿔 보기</span>[중간 공유] 09:10부터 A→B 연동이 실패하고 있습니다. 서버·서비스는 정상이고 포트 연결이 timeout이라, 네트워크 구간 차단으로 보고 망 담당자와 확인 중입니다. <b>10:00에 다시 공유</b>드리겠습니다.</div></section><section class="card"><div class="card-h"><span class="ic">💬</span>조치 완료 확인 회신<span class="lvq">상황 3</span></div>
+<p class="situ">📍 보안 담당자가 "방화벽 열었습니다"라고 연락했다.</p><div class="say bad"><span class="lbl">아쉬운 예</span>네 감사합니다~</div><div class="say good"><span class="lbl">이렇게 바꿔 보기</span>[확인 완료] 192.0.2.11 → 192.0.2.10 TCP 8080 연결 정상 확인했습니다(TcpTestSucceeded: True, 14:20). 결과 캡처는 작업결과서에 첨부하겠습니다. 빠른 처리 감사합니다.</div></section>
+<section class="card"><div class="card-h"><span class="ic">🎯</span>요청·공유하기의 공통 원칙</div><ul class="checks"><li><b>무엇을</b>: 대상·범위를 한 줄로 — 되묻는 왕복을 없애기</li><li><b>근거</b>: 테스트 결과·시각·캡처 — 상대가 판단할 재료</li><li><b>다음 시점</b>: 기한이나 다음 공유 시각을 명시 — 모르는 상황일수록 더 중요</li></ul>
+<p style="font-weight:800;margin:14px 0 6px">오늘의 틀</p><pre><code>[요청/공유 종류] 무엇을 (대상·범위)
+근거 (테스트 결과 · 시각 · 캡처)
+다음 (기한 질문 또는 다음 공유 시각)</code></pre></section>
+<section class="card span2"><div class="card-h"><span class="ic">📋</span>바로 쓰는 문장<small>복사해서 그대로 쓰세요</small></div><div class="phr"><span>출발지 / 목적지 / 포트 / 용도 / 기간 기준으로 정리드립니다.</span><button class="copy" data-t="출발지 / 목적지 / 포트 / 용도 / 기간 기준으로 정리드립니다.">복사</button></div><div class="phr"><span>테스트 결과 캡처 첨부드립니다. 확인 부탁드립니다.</span><button class="copy" data-t="테스트 결과 캡처 첨부드립니다. 확인 부탁드립니다.">복사</button></div><div class="phr"><span>현재까지 확인된 내용은 ~이고, ~시에 다시 공유드리겠습니다.</span><button class="copy" data-t="현재까지 확인된 내용은 ~이고, ~시에 다시 공유드리겠습니다.">복사</button></div><div class="phr"><span>~까지 반영 가능하실지 여쭙습니다.</span><button class="copy" data-t="~까지 반영 가능하실지 여쭙습니다.">복사</button></div></section>
+</div></div><div class="panel" data-p="cert"><div class="grid">
+<section class="card"><div class="card-h"><span class="ic">🎓</span>네트워크관리사 2급<small>TCP/IP · 포트</small></div><div class="summary-box"><b>TCP 제어 플래그 핵심</b><table><tr><th>플래그</th><th>역할</th></tr><tr><td>SYN</td><td>연결 요청</td></tr><tr><td>ACK</td><td>수신 확인</td></tr><tr><td>FIN</td><td>정상 종료 요청</td></tr><tr><td>RST</td><td>강제 종료·거부</td></tr><tr><td>PSH / URG</td><td>즉시 전달 / 긴급 데이터</td></tr></table><b>자주 나오는 포트</b><br>20·21 FTP · 22 SSH · 23 Telnet · 25 SMTP · 53 DNS · 80 HTTP · 110 POP3 · 143 IMAP · 443 HTTPS</div>
+<div class="tip" style="font-size:13px">출제 경향을 참고해 만든 연습 문제예요. 시험 일정·제도는 공식 사이트에서 확인하세요.</div><div class="info">오늘 개발공부의 refused / timeout 차이가 문제 2번의 실무 버전이에요.</div></section>
+<section class="card cert" data-answer="0" data-id="2026-10-08-c0"><div class="card-h"><span class="ic">✍️</span>문제 1<span class="lvq">쉬움</span></div>
+<p class="qtext">TCP 3-way handshake의 순서로 옳은 것은?</p><div class="choices"><button class="choice"><b>1</b>SYN → SYN/ACK → ACK</button><button class="choice"><b>2</b>SYN → ACK → FIN</button><button class="choice"><b>3</b>ACK → SYN → SYN/ACK</button><button class="choice"><b>4</b>SYN → FIN → ACK</button></div>
+<div class="explain"><b>정답 1번.</b> 클라이언트가 SYN으로 요청 → 서버가 SYN/ACK로 응답 → 클라이언트가 ACK로 확인하면 연결이 수립됩니다. FIN은 연결 종료(4-way)에 쓰여요.<div class="chk" data-id="2026-10-08-c0"><button data-v="ok">✓ 알았음</button><button data-v="hard">? 헷갈림</button></div></div></section><section class="card cert" data-answer="2" data-id="2026-10-08-c1"><div class="card-h"><span class="ic">✍️</span>문제 2<span class="lvq">보통</span></div>
+<p class="qtext">클라이언트가 SYN을 보냈지만 해당 포트에서 대기 중인 프로세스가 없을 때, 서버가 돌려보내는 플래그는?</p><div class="choices"><button class="choice"><b>1</b>SYN</button><button class="choice"><b>2</b>ACK</button><button class="choice"><b>3</b>RST</button><button class="choice"><b>4</b>FIN</button></div>
+<div class="explain"><b>정답 3번.</b> 닫힌 포트로 SYN이 오면 <b>RST</b>로 응답 → 클라이언트에는 <code>Connection refused</code>. 방화벽이 패킷을 버리면 응답이 없어 timeout이 됩니다.<div class="chk" data-id="2026-10-08-c1"><button data-v="ok">✓ 알았음</button><button data-v="hard">? 헷갈림</button></div></div></section><section class="card cert" data-answer="3" data-id="2026-10-08-c2"><div class="card-h"><span class="ic">✍️</span>문제 3<span class="lvq">함정</span></div>
+<p class="qtext">잘 알려진 포트(well-known port)와 서비스의 연결이 <b>틀린</b> 것은?</p><div class="choices"><button class="choice"><b>1</b>22 - SSH</button><button class="choice"><b>2</b>23 - Telnet</button><button class="choice"><b>3</b>53 - DNS</button><button class="choice"><b>4</b>110 - SMTP</button></div>
+<div class="explain"><b>정답 4번.</b> 110은 <b>POP3</b>(메일 수신)이고, SMTP(메일 발송)는 <b>25</b>번입니다. 메일 관련 포트(25/110/143)는 서로 바꿔 내는 함정이 자주 나와요.<div class="chk" data-id="2026-10-08-c2"><button data-v="ok">✓ 알았음</button><button data-v="hard">? 헷갈림</button></div></div></section></div></div><div class="panel" data-p="eng"><div class="grid">
+<section class="card span2"><div class="card-h"><span class="ic">🌐</span>오늘의 기술 영어<small>로그·문서·에러 메시지에서 자주 보는 표현</small></div>
+<div class="tiles c3"><div class="tile eng-item"><div class="en">Connection refused</div><div class="ko">연결 거부됨</div><div class="where">📍 curl·애플리케이션 에러 메시지</div><div class="ex">Failed to connect to 192.0.2.10 port 8080: Connection refused<i>192.0.2.10의 8080 포트 연결 실패: 연결 거부됨</i></div></div><div class="tile eng-item"><div class="en">timed out</div><div class="ko">시간 초과</div><div class="where">📍 네트워크·DB 연결 에러</div><div class="ex">The connection attempt timed out after 3 seconds.<i>연결 시도가 3초 후 시간 초과되었다.</i></div></div><div class="tile eng-item"><div class="en">listen on / bind to</div><div class="ko">(포트에서) 대기하다 / (주소에) 바인딩하다</div><div class="where">📍 서버 설정 문서·기동 로그</div><div class="ex">The server listens on port 8080 and binds to 0.0.0.0.<i>서버는 8080 포트에서 대기하며 0.0.0.0에 바인딩된다.</i></div></div><div class="tile eng-item"><div class="en">inbound / outbound rule</div><div class="ko">들어오는 / 나가는 방화벽 규칙</div><div class="where">📍 방화벽·클라우드 보안 설정</div><div class="ex">Add an inbound rule to allow TCP 8080 from the app server.<i>앱 서버에서 오는 TCP 8080을 허용하는 인바운드 규칙을 추가하세요.</i></div></div><div class="tile eng-item"><div class="en">Destination host unreachable</div><div class="ko">대상 호스트에 도달할 수 없음</div><div class="where">📍 ping 결과 메시지</div><div class="ex">Reply from 192.0.2.1: Destination host unreachable.<i>192.0.2.1의 응답: 대상 호스트에 도달할 수 없음 (경로·게이트웨이 문제 의심)</i></div></div></div>
+<div class="tip">에러 메시지는 번역하지 말고 <b>영어 원문 그대로</b> 검색하면 해결책을 훨씬 빨리 찾습니다.</div></section><section class="card span2"><div class="card-h"><span class="ic">📄</span>독해 연습 — WAS 에러 로그 읽기<small>먼저 스스로 읽고 해석을 펼쳐 보세요</small></div>
+<pre><code>2026-10-08 09:12:03 ERROR [OrderApiClient] I/O error on POST request
+  for &quot;http://192.0.2.10:8080/api/orders&quot;: Connect timed out
+Caused by: java.net.SocketTimeoutException: Connect timed out</code></pre><details><summary>한 줄씩 해석 보기</summary><div><dl class="tr"><dt>ERROR [OrderApiClient]</dt><dd>OrderApiClient 클래스에서 ERROR 레벨 로그 발생</dd><dt>I/O error on POST request for &quot;...&quot;</dt><dd>해당 주소로 보낸 POST 요청에서 입출력 오류가 났다</dd><dt>Caused by: java.net.SocketTimeoutException</dt><dd>근본 원인 예외. <b>Caused by</b> 줄이 진짜 원인을 알려줘요</dd><dt>Connect timed out</dt><dd><b>연결 단계</b>에서 시간 초과 → 방화벽·경로 문제 의심</dd></dl></div></details>
+<div class="tip">💡 <b>Connect timed out</b>(연결 자체가 안 됨 → 네트워크)과 <b>Read timed out</b>(연결은 됐는데 응답이 늦음 → 상대 서버 처리 지연)은 원인이 완전히 달라요. 로그에서 이 두 단어부터 구분하세요.</div></section></div></div><dl id="today-terms" hidden><dt>포트 (Port)</dt><dd>한 서버 안에서 어떤 서비스로 갈지 구분하는 번호. 예: 80(HTTP), 443(HTTPS), 8080(WAS)</dd><dt>ICMP</dt><dd>ping이 사용하는 프로토콜. 보안상 차단된 경우가 많아 ping 실패 ≠ 서버 다운</dd><dt>Connection refused</dt><dd>서버에는 도달했지만 해당 포트에서 듣는 프로세스가 없음</dd><dt>Connection timed out</dt><dd>응답이 아예 없음. 중간 방화벽에서 패킷이 버려지는 경우가 대부분</dd><dt>LISTEN</dt><dd>프로세스가 특정 포트에서 연결을 기다리는 상태 (ss -tlnp로 확인)</dd><dt>루프백 (127.0.0.1)</dt><dd>자기 자신을 가리키는 주소. 여기에만 바인딩하면 외부 접속 불가</dd><dt>0.0.0.0 바인딩</dt><dd>서버의 모든 네트워크 인터페이스에서 연결을 받겠다는 뜻</dd><dt>3-way handshake</dt><dd>TCP 연결 수립 과정. SYN → SYN/ACK → ACK</dd><dt>RST</dt><dd>TCP 연결을 즉시 끊거나 거부할 때 보내는 플래그. 닫힌 포트에 연결하면 RST가 와서 refused가 됨</dd><dt>DROP / REJECT</dt><dd>방화벽 차단 방식. DROP은 응답 없이 버림(→timeout), REJECT는 거부 응답을 보냄(→즉시 실패)</dd><dt>보안그룹 (Security Group)</dt><dd>클라우드에서 서버 단위로 적용하는 가상 방화벽 규칙</dd><dt data-track="eng">Connection refused</dt><dd>연결 거부됨 — curl·애플리케이션 에러 메시지</dd><dt data-track="eng">timed out</dt><dd>시간 초과 — 네트워크·DB 연결 에러</dd><dt data-track="eng">listen on / bind to</dt><dd>(포트에서) 대기하다 / (주소에) 바인딩하다 — 서버 설정 문서·기동 로그</dd><dt data-track="eng">inbound / outbound rule</dt><dd>들어오는 / 나가는 방화벽 규칙 — 방화벽·클라우드 보안 설정</dd><dt data-track="eng">Destination host unreachable</dt><dd>대상 호스트에 도달할 수 없음 — ping 결과 메시지</dd></dl></main><aside class="side" id="side"><div class="card">
+<div class="card-h"><span class="ic">📖</span>용어 사전<small>/ 키로 검색</small></div>
+<div class="tabs"><button class="on" data-m="today">오늘</button><button data-m="all">전체</button></div>
+<input class="search" placeholder="모르는 용어 검색"><div class="tlist"></div></div></aside></div>
+<button class="fab">📖 용어</button><script src="../assets/data.js"></script><script src="../assets/app.js"></script></body></html>

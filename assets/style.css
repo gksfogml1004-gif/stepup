@@ -209,3 +209,91 @@ details>div{font-size:14.5px;background:var(--card);border-radius:8px;padding:8p
   .filters{flex-wrap:wrap}
   .filters button{flex:none}
 }
+/* ===== 탭·부가 기능 ===== */
+:root{--comm:#d6336c;--cert:#e67700;--eng:#1c7ed6}
+.panel{display:none} .panel.on{display:block}
+.panel[data-p=comm]{--c:var(--comm)} .panel[data-p=cert]{--c:var(--cert)} .panel[data-p=eng]{--c:var(--eng)}
+.ptabs{display:flex;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:6px;margin-bottom:14px;
+  position:sticky;top:8px;z-index:30;box-shadow:var(--shadow);overflow-x:auto;scrollbar-width:none}
+.ptabs button{flex:1;white-space:nowrap;border:0;background:none;font:inherit;font-weight:800;font-size:14.5px;color:var(--sub);padding:10px 12px;border-radius:10px;cursor:pointer}
+.ptabs button.on{background:var(--c);color:#fff}
+.ptabs button[data-p=comm].on{background:var(--comm)} .ptabs button[data-p=cert].on{background:var(--cert)} .ptabs button[data-p=eng].on{background:var(--eng)}
+.ptabs button small{font-weight:600;opacity:.75;margin-left:4px;font-size:12px}
+.topbar .daynav{display:flex;gap:14px}
+.tiles.c4{grid-template-columns:repeat(4,minmax(0,1fr))}
+/* 커뮤니케이션 */
+.say{border-radius:12px;padding:12px 14px;margin:10px 0;font-size:15px}
+.say .lbl{display:block;font-size:12px;font-weight:800;margin-bottom:4px}
+.say.bad{background:var(--warn-bg)} .say.bad .lbl{color:var(--warn)}
+.say.good{background:var(--ok-bg)} .say.good .lbl{color:var(--ok)}
+.situ{font-size:15.5px;font-weight:600}
+/* 자격증 */
+.cert .qtext{font-size:16px;font-weight:700;margin-bottom:4px}
+.choices{display:grid;gap:8px;margin:12px 0}
+.choice{text-align:left;border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:10px;padding:11px 14px;font:inherit;cursor:pointer}
+.choice:hover:not(:disabled){border-color:var(--c)}
+.choice b{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:6px;background:var(--soft);margin-right:8px;font-size:12px}
+.choice.right{border-color:var(--ok);background:var(--ok-bg)} .choice.wrong{border-color:var(--warn);background:var(--warn-bg)}
+.choice:disabled{cursor:default}
+.explain{display:none;background:var(--soft);border-radius:10px;padding:12px 14px;font-size:14.5px}
+.explain.show{display:block}
+/* 기술 영어 */
+.eng-list{display:grid;gap:10px}
+.eng-item .en{font-family:"D2Coding","Consolas",monospace;font-weight:800;font-size:16px;color:var(--c)}
+.eng-item .ko{font-weight:700;margin:2px 0}
+.eng-item .where{font-size:12px;color:var(--sub)}
+.eng-item .ex{margin-top:8px;font-size:14px;border-left:3px solid var(--c);padding-left:10px}
+.eng-item .ex i{display:block;font-style:normal;color:var(--sub);font-size:13px}
+/* 셀프 체크 */
+.chk{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.chk button{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:3px 11px;font:inherit;font-size:12.5px;font-weight:700;color:var(--sub);cursor:pointer}
+.chk button.on[data-v=ok]{background:var(--ok);color:#fff;border-color:var(--ok)}
+.chk button.on[data-v=hard]{background:var(--warn);color:#fff;border-color:var(--warn)}
+/* 케이스 스터디 */
+.timeline{list-style:none;padding:0;margin:4px 0 0 8px;border-left:3px solid var(--c)}
+.timeline li{padding:0 0 14px 18px;position:relative;margin:0}
+.timeline li::before{content:"";position:absolute;left:-9px;top:5px;width:15px;height:15px;border-radius:50%;background:var(--card);border:3px solid var(--c)}
+.timeline li>b:first-child{display:block}
+.timeline pre{margin-top:6px}
+.report{background:var(--soft);border-radius:10px;padding:12px 14px;font-size:14.5px;margin-top:6px}
+/* 메인: 복습함 */
+.rq{display:block;padding:10px 12px;border-radius:10px;background:var(--soft);margin-bottom:8px;color:inherit}
+.rq:hover{text-decoration:none;outline:1px solid var(--warn)}
+.rq .m{display:block;font-size:12px;color:var(--sub)}
+.chip.lv{background:rgba(255,255,255,.32)}
+@media (max-width:720px){
+  .tiles.c4{grid-template-columns:minmax(0,1fr)}
+  .ptabs{top:6px;padding:4px;gap:4px;margin-bottom:10px;border-radius:12px}
+  .ptabs button{font-size:13px;padding:8px 6px}
+  .ptabs button small{display:none}
+  body.mtabs:not([data-panel=dev]) .mnav, body.mtabs:not([data-panel=dev]) .secnav{display:none}
+  body.mtabs:not([data-panel=dev]) .fab{display:block}
+  body.mtabs:not([data-panel=dev]){padding-bottom:70px}
+  .topbar .daynav{gap:10px}
+}
+/* ===== 보강 콘텐츠 ===== */
+.lbl2{font-size:12.5px;font-weight:800;color:var(--sub);margin:12px 0 4px}
+pre.out{background:var(--soft);color:var(--text);border:1px dashed var(--line);margin-top:0}
+.reads{list-style:none;padding:0;margin:8px 0 0}
+.reads li{padding:4px 0 4px 22px;position:relative;font-size:14.5px;margin:0}
+.reads li::before{content:"→";position:absolute;left:2px;color:var(--c);font-weight:800}
+details.deep{margin-top:16px;border:1px solid var(--line);border-radius:12px;padding:12px 16px;background:var(--soft)}
+details.deep>summary{font-size:15px;padding:0;background:none;display:block;color:var(--c);border-radius:0}
+details.deep>div{border:0;background:none;padding:0;margin-top:8px;font-size:15px}
+.deep-item{padding:12px 0;border-top:1px dashed var(--line)} .deep-item:first-child{border-top:0}
+.deep-item>b.dt{display:block;margin-bottom:4px;font-size:15.5px}
+.mist{list-style:none;padding:0;margin:0}
+.mist li{padding:10px 0;border-bottom:1px dashed var(--line);margin:0} .mist li:last-child{border:0}
+.mist li>b.dt{display:block;color:var(--warn)} .mist li>b.dt::before{content:"✗ "}
+.phr{display:flex;gap:10px;align-items:flex-start;justify-content:space-between;padding:10px 12px;border-radius:10px;background:var(--soft);margin-bottom:8px;font-size:15px}
+.copy{flex:none;border:1px solid var(--line);background:var(--card);border-radius:8px;padding:3px 10px;font:inherit;font-size:12px;font-weight:700;color:var(--sub);cursor:pointer}
+.copy:hover{color:var(--c);border-color:var(--c)}
+dl.tr{margin:8px 0 0} .tr dt{font-family:"D2Coding","Consolas",monospace;font-size:13.5px;font-weight:700;margin-top:12px;color:var(--c)}
+.tr dd{margin:2px 0 0;font-size:14.5px}
+.lvq{font-size:11.5px;font-weight:800;padding:2px 9px;border-radius:999px;background:color-mix(in srgb,var(--c) 14%,transparent);color:var(--c);margin-left:auto}
+.summary-box{font-size:14.5px} .summary-box table{font-size:13.5px}
+.cheat .gcard code{display:block;font-size:13.5px;background:var(--soft);padding:6px 8px;border-radius:6px;margin-bottom:6px;word-break:break-all}
+.cheat .row{display:flex;gap:8px;align-items:flex-start}
+.cheat .row code{flex:1}
+.case-tag{font-size:12px;font-weight:800;color:var(--c)}
+@media (max-width:720px){ details.deep{padding:10px 12px} .phr{font-size:14.5px} }

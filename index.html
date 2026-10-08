@@ -1,38 +1,44 @@
 <!doctype html><html lang="ko"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1"><title>아침 개발공부</title>
-<link rel="stylesheet" href="assets/style.css"></head><body class="dev"><div class="page full"><main>
-<section class="hero"><div class="chips"><span class="chip">SM 스킬업 루틴</span><span class="chip">하루 15분</span></div>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>아침 개발공부 — 하루 15분 SM 스킬업</title><meta name="description" content="개발 · DB · 서버 · 네트워크 · SM 실무를 매일 15분씩. 커뮤니케이션 · 자격증 · 기술영어까지.">
+<meta property="og:type" content="website"><meta property="og:site_name" content="아침 개발공부">
+<meta property="og:title" content="아침 개발공부 — 하루 15분 SM 스킬업"><meta property="og:description" content="개발 · DB · 서버 · 네트워크 · SM 실무를 매일 15분씩. 커뮤니케이션 · 자격증 · 기술영어까지.">
+<meta property="og:image" content="https://stepup-alpha-ten.vercel.app/assets/og/main.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta property="og:url" content="https://stepup-alpha-ten.vercel.app/"><meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#3b63e0"><link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png"><link rel="icon" type="image/png" href="assets/icons/icon-192.png">
+<link rel="stylesheet" href="assets/style.css"></head>
+<body class="dev" data-root=""><div class="page full"><main>
+<section class="hero"><div class="chips"><span class="chip">SM 스킬업 루틴</span><span class="chip">하루 15분</span><span class="chip">💬 🎓 🌐 탭 포함</span></div>
 <h1>🌅 아침 개발공부</h1><p class="lead">개발 · DB · 서버 · 네트워크 · SM 실무를 순서대로 돌며 복습과 예습을 함께 합니다</p>
-<div class="stats"><div class="stat"><b>2일</b><span>누적 공부</span></div>
-<div class="stat"><b>2/40</b><span>1회차 진도</span></div>
-<div class="stat"><b>15개</b><span>익힌 용어</span></div>
-<div class="stat"><b>1회차</b><span>기본기 다지기</span></div></div>
-<div class="steps"><a href="용어집.html">📖 용어집 열기</a></div></section>
+<div class="stats"><div class="stat"><b>2일</b><span>누적 공부</span></div><div class="stat"><b>2/40</b><span>1회차 진도</span></div>
+<div class="stat"><b>33개</b><span>용어·표현</span></div><div class="stat"><b>14문제</b><span>퀴즈·자격증</span></div></div>
+<div class="steps"><a href="today/">☀️ 오늘 공부 바로가기</a><a href="용어집.html">📖 용어집</a><a href="치트시트.html">📋 명령어 치트시트</a></div></section>
 <div class="grid" style="margin-bottom:16px"><a class="card" href="2026-10-09/아침공부.html" style="display:block;color:inherit;border-left:6px solid var(--sm)">
 <div class="card-h" style="margin-bottom:6px"><span class="ic">📘</span>최근 공부<small>2026-10-09 (금) · Day 2</small></div>
-<div style="font-size:20px;font-weight:800">SM 산출물 체계 한눈에</div>
-<div style="color:var(--sub);margin-top:4px">📌 요청 → 분석 → 테스트 → 이행 → 결과, 단계마다 증거 한 장.</div></a><div class="card" style="border-left:6px solid var(--dev)">
-<div class="card-h" style="margin-bottom:6px"><span class="ic">⏭️</span>다음 차례<small>"오늘 아침 브리핑해줘"</small></div>
+<div style="font-size:20px;font-weight:800">SM 산출물 체계 한눈에</div><div style="color:var(--sub);margin-top:4px">📌 요청 → 분석 → 테스트 → 이행 → 결과, 단계마다 증거 한 장.</div>
+<div style="margin-top:10px;font-size:13px;color:var(--sub)">💬 커뮤니케이션 · 🎓 자격증 · 🌐 기술영어 탭 포함</div></a><div class="card" style="border-left:6px solid var(--dev)"><div class="card-h" style="margin-bottom:6px"><span class="ic">⏭️</span>다음 차례</div>
 <div style="font-size:20px;font-weight:800"><span style="color:var(--dev)">개발</span> · JVM 메모리(Heap/Stack)와 GC</div>
 <div style="color:var(--sub);margin-top:4px">빠진 날이 있어도 이 순서대로 이어집니다</div></div></div>
+<section class="card" style="margin-bottom:16px;--c:var(--warn)"><div class="card-h"><span class="ic">🔖</span>내 복습함<small id="review-count"></small></div>
+<div id="review-box"></div><div class="meta" style="font-size:12.5px;color:var(--sub);margin-top:6px">이 기기에만 저장돼요. 다른 사람과 기록이 섞이지 않습니다.</div></section>
 <section class="card" style="margin-bottom:16px"><div class="card-h"><span class="ic">📚</span>지난 공부</div>
 <div class="filters"><button class="on" data-f="all">전체</button><button data-f="net">네트워크</button><button data-f="sm">SM</button><input id="q" class="search" placeholder="제목·한 줄 정리 검색"></div>
 <div class="dgrid"><a class="dcard" data-track="sm" style="--tc:var(--sm)" href="2026-10-09/아침공부.html">
-<div class="m"><b>SM</b> · Day 2 · 10/09 (금)</div>
+<div class="m"><b>SM</b> · Day 2 · 10/09 (금) · 기초</div>
 <div class="t">SM 산출물 체계 한눈에</div><div class="o">📌 요청 → 분석 → 테스트 → 이행 → 결과, 단계마다 증거 한 장.</div></a><a class="dcard" data-track="net" style="--tc:var(--net)" href="2026-10-08/아침공부.html">
-<div class="m"><b>네트워크</b> · Day 1 · 10/08 (목)</div>
-<div class="t">포트·방화벽·연결 확인 — &quot;서버가 안 붙어요&quot;의 첫 5분</div><div class="o">📌 refused는 서비스, timeout은 방화벽.</div></a></div></section>
-<section class="card"><div class="card-h"><span class="ic">🗺️</span>1회차 로드맵<small>✓ 완료 · → 다음 차례</small></div>
-<div class="tracks"><div class="trk" style="--tc:var(--dev)"><h4>개발 (Java/Spring/웹)</h4>
-<div style="font-size:12px;color:var(--sub)">0/8</div><div class="bar"><i style="width:0%"></i></div><ol><li class="next">→ JVM 메모리(Heap/Stack)와 GC</li><li>equals/hashCode, String 불변성</li><li>컬렉션 선택 기준과 시간복잡도</li><li>예외 처리 전략</li><li>Spring IoC/DI, Bean 생명주기</li><li>@Transactional의 함정</li><li>MyBatis 동적쿼리·#{} vs ${}</li><li>로그 설계(레벨/MDC)</li></ol></div><div class="trk" style="--tc:var(--db)"><h4>DB/SQL</h4>
-<div style="font-size:12px;color:var(--sub)">0/8</div><div class="bar"><i style="width:0%"></i></div><ol><li class="next">→ 인덱스 동작 원리(B-Tree)</li><li>실행계획 읽는 법</li><li>JOIN 종류와 성능</li><li>트랜잭션·격리수준·락</li><li>페이징 쿼리</li><li>NULL 처리 함정</li><li>서브쿼리 vs JOIN vs EXISTS</li><li>락 대기·데드락 확인 쿼리</li></ol></div><div class="trk" style="--tc:var(--server)"><h4>서버/리눅스/WAS</h4>
-<div style="font-size:12px;color:var(--sub)">0/8</div><div class="bar"><i style="width:0%"></i></div><ol><li class="next">→ 필수 명령어(ps/top/df/du/free)</li><li>로그 보기(tail/grep/less/awk)</li><li>권한·사용자(chmod/chown/umask)</li><li>프로세스·서비스 관리(systemctl/kill)</li><li>Web 서버 vs WAS (Apache/WebtoB/Tomcat/JEUS)</li><li>JVM 옵션·힙덤프·스레드덤프</li><li>crontab·쉘스크립트 기초</li><li>디스크 풀/메모리 부족 장애 대응</li></ol></div><div class="trk" style="--tc:var(--net)"><h4>네트워크</h4>
-<div style="font-size:12px;color:var(--sub)">1/8</div><div class="bar"><i style="width:12%"></i></div><ol><li class="done"><a href="2026-10-08/아침공부.html">✓ 포트·방화벽·연결 확인</a></li><li class="next">→ OSI 7계층·TCP/IP 실무 관점</li><li>IP·서브넷·CIDR·게이트웨이</li><li>DNS와 hosts 파일</li><li>HTTP 구조·상태코드</li><li>HTTPS·SSL 인증서(만료/체인)</li><li>L4/L7·로드밸런서·세션</li><li>tcpdump·프록시·NAT 기초</li></ol></div><div class="trk" style="--tc:var(--sm)"><h4>SM 실무/산출물/보안</h4>
-<div style="font-size:12px;color:var(--sub)">1/8</div><div class="bar"><i style="width:12%"></i></div><ol><li class="done"><a href="2026-10-09/아침공부.html">✓ SM 산출물 체계 한눈에</a></li><li class="next">→ 요구사항정의서·영향도 분석</li><li>장애보고서 작성법</li><li>변경관리·배포·롤백 계획</li><li>테스트 케이스·결과서</li><li>시큐어코딩(행안부 가이드/OWASP)</li><li>형상관리(Git/SVN) 전략</li><li>운영매뉴얼·인수인계서</li></ol></div></div></section>
-<p style="text-align:center;color:var(--sub);font-size:12.5px">마지막 갱신 2026-10-08 07:52</p>
+<div class="m"><b>네트워크</b> · Day 1 · 10/08 (목) · 기초</div>
+<div class="t">포트·방화벽·연결 확인</div><div class="o">📌 refused는 서비스, timeout은 방화벽.</div></a></div></section>
+<section class="card"><div class="card-h"><span class="ic">🗺️</span>1회차 로드맵<small>✓ 완료 · → 다음 차례</small></div><div class="tracks"><div class="trk" style="--tc:var(--dev)"><h4>개발 (Java/Spring/웹)</h4><div style="font-size:12px;color:var(--sub)">0/8</div>
+<div class="bar"><i style="width:0%"></i></div><ol><li class="next">→ JVM 메모리(Heap/Stack)와 GC</li><li>equals/hashCode, String 불변성</li><li>컬렉션 선택 기준과 시간복잡도</li><li>예외 처리 전략</li><li>Spring IoC/DI, Bean 생명주기</li><li>@Transactional의 함정</li><li>MyBatis 동적쿼리·#{} vs ${}</li><li>로그 설계(레벨/MDC)</li></ol></div><div class="trk" style="--tc:var(--db)"><h4>DB/SQL</h4><div style="font-size:12px;color:var(--sub)">0/8</div>
+<div class="bar"><i style="width:0%"></i></div><ol><li class="next">→ 인덱스 동작 원리(B-Tree)</li><li>실행계획 읽는 법</li><li>JOIN 종류와 성능</li><li>트랜잭션·격리수준·락</li><li>페이징 쿼리</li><li>NULL 처리 함정</li><li>서브쿼리 vs JOIN vs EXISTS</li><li>락 대기·데드락 확인 쿼리</li></ol></div><div class="trk" style="--tc:var(--server)"><h4>서버/리눅스/WAS</h4><div style="font-size:12px;color:var(--sub)">0/8</div>
+<div class="bar"><i style="width:0%"></i></div><ol><li class="next">→ 필수 명령어(ps/top/df/du/free)</li><li>로그 보기(tail/grep/less/awk)</li><li>권한·사용자(chmod/chown/umask)</li><li>프로세스·서비스 관리(systemctl/kill)</li><li>Web 서버 vs WAS (Apache/WebtoB/Tomcat/JEUS)</li><li>JVM 옵션·힙덤프·스레드덤프</li><li>crontab·쉘스크립트 기초</li><li>디스크 풀/메모리 부족 장애 대응</li></ol></div><div class="trk" style="--tc:var(--net)"><h4>네트워크</h4><div style="font-size:12px;color:var(--sub)">1/8</div>
+<div class="bar"><i style="width:12%"></i></div><ol><li class="done"><a href="2026-10-08/아침공부.html">✓ 포트·방화벽·연결 확인</a></li><li class="next">→ OSI 7계층·TCP/IP 실무 관점</li><li>IP·서브넷·CIDR·게이트웨이</li><li>DNS와 hosts 파일</li><li>HTTP 구조·상태코드</li><li>HTTPS·SSL 인증서(만료/체인)</li><li>L4/L7·로드밸런서·세션</li><li>tcpdump·프록시·NAT 기초</li></ol></div><div class="trk" style="--tc:var(--sm)"><h4>SM 실무/산출물/보안</h4><div style="font-size:12px;color:var(--sub)">1/8</div>
+<div class="bar"><i style="width:12%"></i></div><ol><li class="done"><a href="2026-10-09/아침공부.html">✓ SM 산출물 체계 한눈에</a></li><li class="next">→ 요구사항정의서·영향도 분석</li><li>장애보고서 작성법</li><li>변경관리·배포·롤백 계획</li><li>테스트 케이스·결과서</li><li>시큐어코딩(행안부 가이드/OWASP)</li><li>형상관리(Git/SVN) 전략</li><li>운영매뉴얼·인수인계서</li></ol></div></div></section>
+<p style="text-align:center;color:var(--sub);font-size:12.5px">마지막 갱신 2026-10-08 08:57</p>
 </main></div><script>(function(){var f="all",q=document.getElementById("q");
 function ap(){var s=q.value.trim().toLowerCase();document.querySelectorAll("[data-track]").forEach(function(el){
 el.style.display=((f==="all"||el.dataset.track===f)&&(!s||el.textContent.toLowerCase().indexOf(s)>=0))?"":"none";});}
 document.querySelectorAll(".filters button").forEach(function(b){b.onclick=function(){
 document.querySelectorAll(".filters button").forEach(function(x){x.classList.remove("on")});b.classList.add("on");f=b.dataset.f;ap();};});
-q.oninput=ap;})();</script></body></html>
+q.oninput=ap;})();</script><script src="assets/data.js"></script><script src="assets/app.js"></script></body></html>
