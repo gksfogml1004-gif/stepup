@@ -176,7 +176,7 @@ details>div{font-size:14.5px;background:var(--card);border-radius:8px;padding:8p
   .summary{font-size:17px;padding:20px 14px}
   /* 하단 섹션 탭 (공부 페이지) */
   body.mtabs{padding-bottom:calc(76px + env(safe-area-inset-bottom))}
-  body.mtabs .grid>section:not(.on){display:none}
+  body.mtabs .panel[data-p=dev] .grid>section:not(.on){display:none}
   body.mtabs .fab{display:none}
   .mnav{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:45;background:var(--card);border-top:1px solid var(--line);
     padding:6px 4px calc(6px + env(safe-area-inset-bottom));box-shadow:0 -4px 16px rgba(0,0,0,.06)}
