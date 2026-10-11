@@ -1,0 +1,404 @@
+{
+ "date": "2026-10-12",
+ "day": 3,
+ "cycle": 1,
+ "track": "dev",
+ "topic_no": 1,
+ "level": "기초",
+ "title": "JVM 메모리(Heap/Stack)와 GC",
+ "lead": "객체는 어디에 만들어지고 언제 치워지는지, 그리고 OutOfMemoryError가 났을 때 무엇부터 볼지",
+ "one_liner": "변수는 Stack, 객체는 Heap — OOM엔 늘리기 전에 덤프부터.",
+ "review_note": "지난 공부 3문항 + 기본기 1문항",
+ "review": [
+  {
+   "from": "10/09 · SM",
+   "ref": "2026-10-09-q1",
+   "q": "이행계획서의 롤백 계획에서 \"문제가 생기면 롤백\"이라고만 쓰면 왜 부족할까?",
+   "a": "현장에서 망설이게 됩니다. <b>무엇이 보이면, 몇 분 안에</b> 롤백할지(판단 기준)와 백업 위치·절차·소요 시간까지 적어야 해요."
+  },
+  {
+   "from": "10/09 · SM",
+   "ref": "2026-10-09-q3",
+   "q": "장애 때문에 승인 전에 먼저 반영했다. 나중에 무엇을 남겨야 할까?",
+   "a": "긴급 변경 절차로 <b>사후 요청서·결과서</b>를 작성해 승인받고, 승인자·시각·긴급 사유를 기록합니다."
+  },
+  {
+   "from": "10/08 · 네트워크",
+   "ref": "2026-10-08-q1",
+   "q": "<code>Connection refused</code>가 즉시 떴다. 가장 먼저 확인할 곳은?",
+   "a": "상대 서버에서 <code>ss -tlnp</code>로 해당 포트가 <b>LISTEN 중인지</b>(서비스 기동·포트 번호)부터 확인합니다."
+  },
+  {
+   "from": "기본기 · 개발",
+   "q": "Java에서 문자열 비교에 <code>==</code> 대신 <code>equals()</code>를 써야 하는 이유는?",
+   "a": "<code>==</code>는 <b>같은 객체(주소)인지</b>, <code>equals()</code>는 <b>내용이 같은지</b>를 비교합니다. 오늘 배우는 \"변수엔 주소가 들어 있다\"와 같은 이야기예요."
+  }
+ ],
+ "concept": {
+  "title": "JVM 메모리는 어디에 무엇을 두나",
+  "steps": [
+   {
+    "t": "Stack",
+    "d": "메서드 호출·지역 변수·<b>객체의 주소(참조)</b>",
+    "small": "스레드마다 따로 · 메서드가 끝나면 자동 정리<br>넘치면 <code>StackOverflowError</code>"
+   },
+   {
+    "t": "Heap",
+    "d": "<code>new</code>로 만든 <b>객체 자체</b>",
+    "small": "모든 스레드가 공유 · GC가 정리하는 곳<br>부족하면 <code>OutOfMemoryError: Java heap space</code>"
+   },
+   {
+    "t": "Metaspace",
+    "d": "클래스 정보, static 영역",
+    "small": "Java 8부터 (이전엔 PermGen)<br>재배포를 반복하면 늘어날 수 있음"
+   },
+   {
+    "t": "GC",
+    "d": "<b>더 이상 참조되지 않는</b> 객체를 자동으로 치움",
+    "small": "정리하는 동안 앱이 잠깐 멈출 수 있음<br>(Stop-The-World)"
+   }
+  ],
+  "info": "📌 <code>Order o = new Order();</code> → 객체는 <b>Heap</b>에, 변수 <code>o</code>에는 그 객체의 <b>주소</b>만 Stack에 담깁니다. 아무 변수도 그 주소를 들고 있지 않으면 GC 대상이 돼요.",
+  "compare_title": "메모리 에러 메시지별로 원인이 다릅니다",
+  "compare": [
+   {
+    "kind": "warn",
+    "t": "Java heap space",
+    "d": "객체가 너무 많거나 <b>안 치워짐</b><br>→ 대량 조회, 메모리 누수 의심"
+   },
+   {
+    "kind": "",
+    "t": "Metaspace",
+    "d": "클래스 정보 영역 부족<br>→ 재기동 없이 재배포 반복, 라이브러리 과다"
+   },
+   {
+    "kind": "ok",
+    "t": "StackOverflowError",
+    "d": "호출이 너무 깊음<br>→ 끝나지 않는 재귀 호출 의심"
+   }
+  ],
+  "deep": [
+   {
+    "t": "① 세대별(Generational) GC — 대부분의 객체는 금방 죽는다",
+    "d": "Heap은 <b>Young</b>(Eden + Survivor)과 <b>Old</b>로 나뉩니다. 새 객체는 Eden에 생기고, 여러 번 살아남으면 Old로 옮겨져요. Young 정리(<b>Minor GC</b>)는 자주·짧게, Old까지 정리하는 <b>Full GC</b>는 드물지만 길게 멈춥니다. \"화면이 몇 초씩 멈춰요\"의 흔한 원인이 Full GC 반복이에요."
+   },
+   {
+    "t": "② 메모리를 늘리는 게 정답이 아닌 경우",
+    "d": "<b>메모리 누수</b>(static 컬렉션에 계속 쌓기, 닫지 않은 자원 등)라면 <code>-Xmx</code>를 늘려도 OOM이 <b>늦게 올 뿐</b>이고, 오히려 Full GC 한 번이 더 길어집니다. GC 직후 사용량이 <b>계단처럼 계속 올라가면</b> 누수, 특정 기능 실행 때만 치솟으면 대량 조회를 의심하세요."
+   },
+   {
+    "t": "③ 버전·WAS별로 다른 점",
+    "d": "Java 8은 기본 GC가 Parallel, <b>Java 9부터는 G1</b>이 기본입니다. 힙 옵션은 Tomcat이면 <code>bin/setenv.sh</code>의 <code>CATALINA_OPTS</code>, JEUS 같은 상용 WAS는 관리 콘솔·도메인 설정의 JVM 옵션 항목에 넣어요.",
+    "code": "# Tomcat 예시: bin/setenv.sh\nCATALINA_OPTS=\"-Xms2g -Xmx2g\n  -XX:+HeapDumpOnOutOfMemoryError\n  -XX:HeapDumpPath=/app/dump\""
+   },
+   {
+    "t": "④ 리뷰·면접에서 나오는 질문",
+    "d": "Q. <b>운영 서버에서 -Xms와 -Xmx를 같은 값으로 주는 이유는?</b><br>A. 힙이 커졌다 줄었다 하는 비용과 그때 생기는 GC를 없애 <b>성능을 안정적으로</b> 만들기 위해서입니다. 대신 서버 물리 메모리와 다른 프로세스 사용량을 고려해 정해야 해요."
+   }
+  ]
+ },
+ "lab": [
+  {
+   "icon": "🔍",
+   "title": "실습 1 · 지금 JVM 옵션 확인",
+   "code": "# 실행 중인 Java 프로세스와 옵션\nps -ef | grep java\n# 실제 적용된 JVM 플래그 (JVM과 같은 사용자로)\njcmd <pid> VM.flags",
+   "output": "appuser 2310 1 5 09:01 ? 00:12:31 /usr/lib/jvm/java-11/bin/java\n  -Xms2g -Xmx2g -XX:+UseG1GC\n  -Dcatalina.base=/app/tomcat ...",
+   "read": [
+    "<code>-Xmx</code>가 최대 힙, <code>-Xms</code>가 시작 힙이에요",
+    "옵션이 없으면 JVM이 서버 메모리 기준으로 자동으로 정해요(보통 물리 메모리의 1/4)",
+    "한 서버에 WAS가 여러 개면 <b>힙 합계 + OS 여유분</b>이 물리 메모리를 넘지 않는지 <code>free -h</code>로 비교"
+   ]
+  },
+  {
+   "icon": "📈",
+   "title": "실습 2 · GC 상황 실시간으로 보기",
+   "code": "# 1초 간격으로 5번 출력\njstat -gcutil <pid> 1000 5",
+   "output": "  S0    S1     E      O      M    CCS   YGC   YGCT  FGC  FGCT  CGC  CGCT    GCT\n 0.00 45.12  63.80  71.25  95.10 92.33  1520 12.345    8 3.210    0 0.000 15.555",
+   "read": [
+    "<b>E</b>(Eden)·<b>O</b>(Old)·<b>M</b>(Metaspace)은 사용률(%), <b>YGC/FGC</b>는 Young/Full GC 누적 횟수예요",
+    "<b>O가 GC 후에도 90% 이상</b>에 머물고 <b>FGC가 짧은 간격으로 계속 늘면</b> 위험 신호(멈춤의 원인)",
+    "YGC가 자주 느는 건 정상이에요. 판단은 FGC와 Old 추이로",
+    "열 구성은 Java 버전에 따라 조금 달라요(위는 Java 11 기준)"
+   ]
+  },
+  {
+   "icon": "🧯",
+   "title": "실습 3 · 장애 때 증거 남기기 (덤프)",
+   "code": "# 스레드 덤프: 멈춤·지연 원인 확인 (가벼움)\njcmd <pid> Thread.print > /app/dump/thread_$(date +%H%M%S).txt\n# 힙 덤프: 무엇이 메모리를 차지하나 (무거움)\njmap -dump:live,format=b,file=/app/dump/heap.hprof <pid>",
+   "output": "Dumping heap to /app/dump/heap.hprof ...\nHeap dump file created",
+   "read": [
+    "스레드 덤프는 <b>몇 초 간격으로 2~3번</b> 떠야 \"계속 같은 곳에 멈춰 있는지\" 비교할 수 있어요",
+    "힙 덤프는 <b>힙 크기만큼 디스크</b>가 필요하고, <code>live</code> 옵션은 덤프 전 Full GC를 일으켜 잠깐 멈춥니다",
+    "힙 덤프 분석은 Eclipse MAT 같은 도구로 \"가장 큰 객체\"부터 봅니다",
+    "<code>jcmd</code>·<code>jmap</code>은 JVM을 실행한 <b>같은 사용자</b>로 실행해야 붙어요"
+   ],
+   "tip": "⚠️ 운영 중 힙 덤프는 서비스가 잠시 멈출 수 있어요. 가능하면 사전 공지하고, 평소엔 <code>-XX:+HeapDumpOnOutOfMemoryError</code>로 자동 덤프를 걸어 두세요."
+  }
+ ],
+ "mistakes": [
+  {
+   "t": "OOM이 나자마자 -Xmx만 올리고 종료",
+   "d": "원인(누수·대량 조회)이 그대로라 며칠 뒤 다시 납니다. 늘리더라도 <b>원인 분석을 함께</b> 진행하세요."
+  },
+  {
+   "t": "재기동부터 해서 증거가 사라짐",
+   "d": "재기동하면 메모리 상태가 날아갑니다. 서비스 복구가 급해도 <b>스레드 덤프 1~2개와 로그 확보</b>는 1분이면 됩니다."
+  },
+  {
+   "t": "서버 메모리보다 큰 힙 합계",
+   "d": "WAS 여러 개의 힙을 합치면 물리 메모리를 넘는 경우가 있어요. 스왑이 생겨 전체가 느려지거나, OS가 프로세스를 강제로 종료할 수 있습니다."
+  },
+  {
+   "t": "대량 데이터를 List에 통째로 담기",
+   "d": "엑셀 다운로드에서 수십만 건을 한 번에 조회하는 게 대표적인 OOM 원인이에요. 페이징, 스트리밍 처리(MyBatis ResultHandler, fetchSize)를 검토하세요."
+  }
+ ],
+ "work": {
+  "items": [
+   "운영 WAS에는 <b>OOM 시 자동 힙 덤프</b> 옵션과 덤프 경로(디스크 여유 있는 곳)를 미리 설정",
+   "GC 로그를 남겨 두면 사후 분석이 가능해요 — Java 9+: <code>-Xlog:gc*:file=/app/logs/gc.log</code>",
+   "장애보고서엔 \"메모리 부족\" 대신 <b>영역(Heap/Metaspace)·기능·데이터 건수</b>를 구체적으로",
+   "정기점검 항목에 <b>Old 사용률 추이와 Full GC 횟수</b>를 넣으면 장애 전에 징후를 잡을 수 있어요"
+  ]
+ },
+ "quiz": [
+  {
+   "q": "메서드 안에서 <code>Order o = new Order();</code>를 실행했다. 변수 <code>o</code>와 Order 객체는 각각 어디에 있을까?",
+   "a": "변수 <code>o</code>(주소)는 <b>Stack</b>, Order 객체는 <b>Heap</b>에 있습니다."
+  },
+  {
+   "q": "<code>jstat</code>을 보니 O(Old)가 99%이고 FGC가 1분마다 늘어난다. 무슨 상황이고 무엇을 해야 할까?",
+   "a": "Full GC를 해도 Old가 비워지지 않는 상태 → 누수나 과다 적재 의심. <b>스레드·힙 덤프와 로그를 확보</b>하고 원인 기능을 찾습니다."
+  },
+  {
+   "q": "-Xmx를 2배로 늘렸는데 며칠 뒤 또 OOM이 났다. 가장 먼저 의심할 것은?",
+   "a": "<b>메모리 누수</b>. 늘린 만큼 늦게 왔을 뿐이에요. GC 후 사용량이 계속 올라가는지 확인하고 힙 덤프로 쌓이는 객체를 찾습니다."
+  },
+  {
+   "q": "화면이 멈춰서 WAS를 재기동하려 한다. 재기동 전에 꼭 남겨야 할 것은?",
+   "a": "<b>스레드 덤프(2~3회)</b>, 에러·GC 로그, 가능하면 힙 덤프. 재기동하면 원인 증거가 사라집니다."
+  }
+ ],
+ "next": {
+  "track": "db",
+  "title": "인덱스 동작 원리(B-Tree)",
+  "question": "인덱스를 분명히 만들었는데도 <b>Full Scan</b>이 나는 경우는 어떤 때일까요?",
+  "tip": "첫날 복습 문제였던 \"컬럼에 함수 씌우기\"가 그 답 중 하나예요. 내일 이유를 그림으로 봅니다."
+ },
+ "terms": [
+  {
+   "term": "JVM",
+   "desc": "Java Virtual Machine. 자바 바이트코드를 실행하고 메모리·GC를 관리하는 실행 환경"
+  },
+  {
+   "term": "힙 (Heap)",
+   "desc": "new로 만든 객체가 저장되는 JVM 메모리 영역. 모든 스레드가 공유하며 GC 대상"
+  },
+  {
+   "term": "스택 (Stack)",
+   "desc": "메서드 호출 정보와 지역 변수(객체 주소 포함)를 담는 스레드별 메모리 영역"
+  },
+  {
+   "term": "Metaspace",
+   "desc": "클래스 정보·static 등을 담는 영역. Java 8부터 PermGen을 대체"
+  },
+  {
+   "term": "GC (Garbage Collection)",
+   "desc": "더 이상 참조되지 않는 객체를 자동으로 회수하는 JVM 기능"
+  },
+  {
+   "term": "Stop-The-World",
+   "desc": "GC 중 애플리케이션 스레드가 잠시 멈추는 현상"
+  },
+  {
+   "term": "Full GC",
+   "desc": "Old 영역까지 포함해 힙 전체를 정리하는 GC. 오래 멈출 수 있음"
+  },
+  {
+   "term": "메모리 누수 (Memory Leak)",
+   "desc": "쓰지 않는 객체가 계속 참조되어 GC가 회수하지 못하고 쌓이는 현상"
+  },
+  {
+   "term": "힙 덤프 (Heap Dump)",
+   "desc": "특정 시점의 힙 메모리 내용을 파일로 저장한 것. 메모리 원인 분석용"
+  },
+  {
+   "term": "스레드 덤프 (Thread Dump)",
+   "desc": "모든 스레드가 그 순간 무엇을 하고 있는지 출력한 것. 멈춤·지연 분석용"
+  }
+ ],
+ "cheat": [
+  {
+   "cmd": "ps -ef | grep java",
+   "desc": "실행 중인 Java 프로세스와 JVM 옵션(-Xms, -Xmx) 확인"
+  },
+  {
+   "cmd": "jcmd <pid> VM.flags",
+   "desc": "실제 적용된 JVM 플래그 확인"
+  },
+  {
+   "cmd": "jstat -gcutil <pid> 1000 5",
+   "desc": "1초 간격 5회 GC 현황 (Old 사용률, Full GC 횟수)"
+  },
+  {
+   "cmd": "jcmd <pid> Thread.print > thread_$(date +%H%M%S).txt",
+   "desc": "스레드 덤프 저장 (몇 초 간격으로 2~3번)"
+  },
+  {
+   "cmd": "jmap -dump:live,format=b,file=heap.hprof <pid>",
+   "desc": "힙 덤프 저장 (잠시 멈출 수 있음)"
+  },
+  {
+   "cmd": "-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=<경로>",
+   "desc": "OOM 발생 시 힙 덤프 자동 생성 옵션"
+  },
+  {
+   "cmd": "free -h",
+   "desc": "서버 전체 메모리 확인 (WAS 힙 합계와 비교)"
+  }
+ ],
+ "extras": {
+  "comm": {
+   "theme": "고객 응대",
+   "cases": [
+    {
+     "title": "\"화면이 느려요\" 문의 첫 응답",
+     "situation": "고객 담당자가 \"엑셀 다운로드가 너무 느리고 가끔 멈춰요\"라고 연락했다.",
+     "bad": "네, 확인해 보겠습니다.",
+     "good": "[접수] 주문 엑셀 다운로드 지연 문의 확인했습니다. <b>발생 시각과 조회 기간</b>을 알려주시면 서버 로그와 함께 확인하겠습니다. <b>오늘 15시까지</b> 1차 결과 공유드리겠습니다."
+    },
+    {
+     "title": "원인을 비전문가에게 설명",
+     "situation": "원인은 대량 조회로 인한 힙 메모리 부족. 고객 담당자는 개발자가 아니다.",
+     "bad": "Heap 메모리가 부족해서 OOM이 나고 Full GC가 반복돼서 그렇습니다.",
+     "good": "한 번에 너무 많은 데이터(약 50만 건, 예시)를 내려받으면서 <b>서버 작업 공간이 부족</b>해졌고, 그동안 다른 화면도 함께 느려졌습니다. 다운로드를 나눠서 처리하도록 개선하겠습니다."
+    },
+    {
+     "title": "개선 전까지 임시 방법 안내",
+     "situation": "개선 반영까지 며칠 걸린다. 그동안 사용자가 어떻게 해야 하는지 알려야 한다.",
+     "bad": "당분간 엑셀 다운로드 쓰지 말아 주세요.",
+     "good": "개선 반영(10/16 예정) 전까지는 <b>조회 기간을 1개월 이내로 나눠</b> 다운로드해 주시면 문제없이 사용 가능합니다. 이용에 불편을 드려 죄송합니다."
+    }
+   ],
+   "points": [
+    "<b>접수 확인 + 필요한 정보 + 회신 시점</b>: 기다리는 사람이 불안하지 않게",
+    "<b>기술 용어 → 영향과 결과</b>로 번역: \"OOM\" 대신 \"작업 공간 부족으로 느려짐\"",
+    "<b>대안과 일정</b>: \"하지 마세요\" 대신 \"이렇게 하시면 됩니다\""
+   ],
+   "template": "[접수/안내] 무엇을 확인했는지\n필요한 정보 요청 (시각·조건·화면)\n원인은 쉬운 말로 (영향 중심)\n대안 + 다음 회신·반영 일정",
+   "phrases": [
+    "문의 주신 내용 확인했습니다. 정확한 확인을 위해 ~를 알려주시겠어요?",
+    "~시까지 1차 확인 결과 공유드리겠습니다.",
+    "쉽게 말씀드리면, ~ 때문에 ~한 상황입니다.",
+    "개선 전까지는 ~ 방법으로 이용해 주시면 됩니다. 불편을 드려 죄송합니다."
+   ]
+  },
+  "cert": {
+   "exam": "정보처리기사",
+   "subject": "프로그래밍 언어 활용 · Java",
+   "summary": "<b>JVM 런타임 데이터 영역</b><table><tr><th>영역</th><th>저장</th><th>공유</th></tr><tr><td>메서드 영역</td><td>클래스 정보, static</td><td>공유</td></tr><tr><td>힙</td><td>객체(new)</td><td>공유</td></tr><tr><td>스택</td><td>지역 변수, 호출 정보</td><td>스레드별</td></tr><tr><td>PC 레지스터</td><td>실행 중인 명령 위치</td><td>스레드별</td></tr><tr><td>네이티브 메서드 스택</td><td>네이티브 코드 호출</td><td>스레드별</td></tr></table><b>GC 핵심</b>: 참조되지 않는 객체를 자동 회수 · Young(Minor GC) / Old(Major·Full GC) · GC 중 Stop-The-World",
+   "tip": "\"공유 vs 스레드별\"을 묻는 문제가 자주 나와요. 힙·메서드 영역만 공유라고 외워 두세요.",
+   "questions": [
+    {
+     "level": "쉬움",
+     "q": "Java에서 <code>new</code>로 생성한 객체가 저장되는 메모리 영역은?",
+     "choices": [
+      "스택(Stack)",
+      "힙(Heap)",
+      "PC 레지스터",
+      "네이티브 메서드 스택"
+     ],
+     "answer": 1,
+     "explain": "객체는 <b>힙</b>에 생성되고, 그 객체를 가리키는 지역 변수(참조)는 스택에 저장됩니다."
+    },
+    {
+     "level": "보통",
+     "q": "JVM 메모리 영역 중 <b>모든 스레드가 공유</b>하는 영역으로만 묶인 것은?",
+     "choices": [
+      "스택, 힙",
+      "힙, 메서드 영역",
+      "스택, PC 레지스터",
+      "PC 레지스터, 메서드 영역"
+     ],
+     "answer": 1,
+     "explain": "<b>힙과 메서드 영역</b>은 공유, 스택·PC 레지스터·네이티브 메서드 스택은 스레드마다 따로 생깁니다."
+    },
+    {
+     "level": "함정",
+     "q": "가비지 컬렉션(GC)에 대한 설명으로 <b>틀린</b> 것은?",
+     "choices": [
+      "참조되지 않는 객체의 메모리를 자동으로 회수한다",
+      "<code>System.gc()</code>를 호출하면 즉시 GC가 반드시 수행된다",
+      "GC 수행 중 애플리케이션이 멈추는 Stop-The-World가 발생할 수 있다",
+      "Young 영역을 대상으로 하는 GC를 Minor GC라고 한다"
+     ],
+     "answer": 1,
+     "explain": "<code>System.gc()</code>는 GC를 <b>요청</b>할 뿐, 즉시 수행을 보장하지 않습니다(JVM 판단·옵션에 따라 무시될 수도 있음). 운영 코드에서 호출하는 건 권장되지 않아요."
+    }
+   ]
+  },
+  "eng": {
+   "items": [
+    {
+     "en": "OutOfMemoryError: Java heap space",
+     "ko": "메모리 부족 오류: 자바 힙 공간",
+     "where": "WAS 에러 로그",
+     "ex": "java.lang.OutOfMemoryError: Java heap space",
+     "ex_ko": "힙에 새 객체를 만들 공간이 없어 발생한 오류"
+    },
+    {
+     "en": "memory leak",
+     "ko": "메모리 누수",
+     "where": "장애 분석·이슈 트래커",
+     "ex": "The heap usage keeps growing after each GC, which suggests a memory leak.",
+     "ex_ko": "GC 후에도 힙 사용량이 계속 늘어나 메모리 누수가 의심된다."
+    },
+    {
+     "en": "GC pause",
+     "ko": "GC로 인한 멈춤",
+     "where": "GC 로그·성능 문서",
+     "ex": "Long GC pauses caused request timeouts.",
+     "ex_ko": "긴 GC 멈춤 때문에 요청 시간 초과가 발생했다."
+    },
+    {
+     "en": "heap dump / thread dump",
+     "ko": "힙 덤프 / 스레드 덤프",
+     "where": "장애 대응 절차서",
+     "ex": "Take a thread dump before restarting the server.",
+     "ex_ko": "서버를 재기동하기 전에 스레드 덤프를 떠 두세요."
+    },
+    {
+     "en": "stack trace",
+     "ko": "스택 트레이스 (호출 경로)",
+     "where": "에러 로그·이슈 보고",
+     "ex": "Please attach the full stack trace to the issue.",
+     "ex_ko": "이슈에 전체 스택 트레이스를 첨부해 주세요."
+    }
+   ],
+   "tip": "\"Caused by\"와 함께 <b>stack trace에서 우리 패키지(com.회사명...)가 처음 나오는 줄</b>을 찾는 습관을 들이면 원인 위치를 빨리 찾습니다.",
+   "reading": {
+    "title": "OOM 스택 트레이스 읽기 (예시)",
+    "text": "ERROR [http-nio-8080-exec-7] Request processing failed\njava.lang.OutOfMemoryError: Java heap space\n    at java.util.ArrayList.grow(ArrayList.java)\n    at com.example.order.OrderService.exportAll(OrderService.java:88)\n    at com.example.order.OrderController.excel(OrderController.java:41)",
+    "lines": [
+     {
+      "en": "[http-nio-8080-exec-7]",
+      "ko": "요청을 처리하던 <b>스레드 이름</b> — Tomcat의 8080 포트 요청 처리 스레드"
+     },
+     {
+      "en": "java.lang.OutOfMemoryError: Java heap space",
+      "ko": "<b>무슨 일</b>이 났나 — 힙 메모리 부족"
+     },
+     {
+      "en": "at java.util.ArrayList.grow(...)",
+      "ko": "리스트가 커지려고 공간을 늘리다 실패 — 많은 데이터를 List에 담는 중이었다는 단서"
+     },
+     {
+      "en": "at com.example.order.OrderService.exportAll(OrderService.java:88)",
+      "ko": "<b>우리 코드가 처음 나오는 줄</b> — 엑셀 전체 내보내기 기능 88번째 줄부터 확인"
+     }
+    ],
+    "note": "💡 스택 트레이스는 <b>위가 가장 최근 호출</b>, 아래로 갈수록 호출한 쪽이에요. 단, OOM은 \"마지막으로 메모리를 요청한 곳\"에서 터질 뿐 진짜 범인이 다른 곳일 수 있어서 <b>힙 덤프로 확인</b>하는 게 정석입니다."
+   }
+  }
+ }
+}

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""_data/*.json(하루치 내용) → 날짜별 페이지, index.html, 용어집.html, today/, assets/data.js, _진도.json(days) 자동 생성.
+"""_data/*.json(하루치 내용) → days/날짜.html, index.html, 용어집.html, today/, assets/data.js, _진도.json(days) 자동 생성.
 매일은 _data/YYYY-MM-DD.json 하나만 추가하고 이 스크립트를 실행하면 된다."""
 import json, os, html, datetime, glob
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -20,7 +20,7 @@ def w(path, s):
 days = []
 for f in sorted(glob.glob(os.path.join(ROOT, "_data", "*.json"))):
     d = json.load(open(f, encoding="utf-8"))
-    d.setdefault("path", f'{d["date"]}/아침공부.html'); d.setdefault("cycle", 1)
+    d["path"] = f'days/{os.path.splitext(os.path.basename(f))[0]}.html'; d.setdefault("cycle", 1)
     days.append(d)
 days.sort(key=lambda d: (d["date"], d["day"]))
 
@@ -183,7 +183,7 @@ quiz += [{"id": f'{d["date"]}-c{n}', "q": q["q"], "path": d["path"] + "#cert", "
 w("assets/data.js", "window.TERMS=" + json.dumps(terms, ensure_ascii=False) + ";\nwindow.QUIZ=" + json.dumps(quiz, ensure_ascii=False) + ";")
 
 # _진도.json days 동기화 (복습 문제 고를 때 참고용)
-P["days"] = [{k: d[k] for k in ("date", "day", "cycle", "track", "topic_no", "title", "one_liner", "path") if k in d} | {"quiz": d.get("quiz", []), "terms": d.get("terms", [])} for d in days]
+P["days"] = [{k: d[k] for k in ("date", "day", "cycle", "track", "topic_no", "title", "one_liner", "path") if k in d} for d in days]
 if days: P["cycle"] = days[-1].get("cycle", 1)
 json.dump(P, open(PJ, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
 
