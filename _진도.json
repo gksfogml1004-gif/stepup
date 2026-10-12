@@ -114,6 +114,16 @@
       "title": "JVM 메모리(Heap/Stack)와 GC",
       "one_liner": "변수는 Stack, 객체는 Heap — OOM엔 늘리기 전에 덤프부터.",
       "path": "days/2026-10-12.html"
+    },
+    {
+      "date": "2026-10-13",
+      "day": 4,
+      "cycle": 1,
+      "track": "db",
+      "topic_no": 1,
+      "title": "인덱스 동작 원리(B-Tree)",
+      "one_liner": "인덱스 컬럼은 그대로 두고, 값 쪽을 가공하라.",
+      "path": "days/2026-10-13.html"
     }
   ],
   "rotation": [

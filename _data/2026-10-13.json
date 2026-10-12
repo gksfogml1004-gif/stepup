@@ -1,0 +1,398 @@
+{
+ "date": "2026-10-13",
+ "day": 4,
+ "cycle": 1,
+ "track": "db",
+ "topic_no": 1,
+ "level": "기초",
+ "title": "인덱스 동작 원리(B-Tree)",
+ "lead": "인덱스는 \"정렬된 목차\" — 왜 어떤 조건은 빨라지고, 어떤 조건은 인덱스가 있어도 Full Scan이 되는지",
+ "one_liner": "인덱스 컬럼은 그대로 두고, 값 쪽을 가공하라.",
+ "key_points": [
+  "인덱스 = 키를 <b>정렬</b>해 두고 ROWID로 행을 찾아가는 목차",
+  "컬럼 가공·앞 <code>%</code>·형변환은 정렬을 못 써서 <b>Full Scan</b>",
+  "결합 인덱스는 <b>선두 컬럼</b> 조건이 있어야 제대로 탄다"
+ ],
+ "review_note": "어제 3문항 + 기본기 1문항",
+ "review": [
+  {
+   "from": "10/12 · 개발",
+   "ref": "2026-10-12-q0",
+   "q": "<code>List&lt;Order&gt; list = new ArrayList&lt;&gt;();</code> — 변수 <code>list</code>와 ArrayList 객체는 각각 어디에 있을까?",
+   "a": "변수 <code>list</code>(주소)는 <b>Stack</b>, ArrayList 객체는 <b>Heap</b>."
+  },
+  {
+   "from": "10/12 · 개발",
+   "ref": "2026-10-12-q2",
+   "q": "-Xmx를 늘렸는데 며칠 뒤 또 OOM. 무엇을 의심하고 무엇으로 확인할까?",
+   "a": "<b>메모리 누수</b> 의심. GC 후 사용량 추이(jstat)와 <b>힙 덤프</b>로 계속 쌓이는 객체를 찾습니다."
+  },
+  {
+   "from": "10/12 · 개발",
+   "ref": "2026-10-12-q3",
+   "q": "WAS 재기동 직전, 1분 안에 남겨야 할 증거 두 가지는?",
+   "a": "<b>스레드 덤프(2~3회)</b>와 에러·GC 로그. 가능하면 힙 덤프까지."
+  },
+  {
+   "from": "기본기 · DB",
+   "q": "PK와 UNIQUE 제약의 차이는?",
+   "a": "둘 다 중복을 막고 유니크 인덱스를 씁니다. <b>PK는 NULL 불가·테이블당 1개</b>, UNIQUE는 NULL을 허용하고 여러 개 둘 수 있어요."
+  }
+ ],
+ "concept": {
+  "title": "B-Tree 인덱스는 이렇게 찾는다",
+  "steps": [
+   {
+    "t": "Root · Branch",
+    "d": "\"이 값은 어느 쪽?\" 방향 안내",
+    "small": "몇 단계만 내려가면 리프에 도착<br>데이터가 많아도 깊이는 거의 그대로"
+   },
+   {
+    "t": "Leaf",
+    "d": "<b>정렬된 키 + ROWID</b>",
+    "small": "ROWID = 행이 저장된 실제 위치 주소"
+   },
+   {
+    "t": "테이블 접근",
+    "d": "ROWID로 <b>테이블 행</b>을 읽음",
+    "small": "필요한 컬럼이 인덱스에 다 있으면 생략 가능"
+   },
+   {
+    "t": "범위 스캔",
+    "d": "리프끼리 연결돼 있어 <b>옆으로 이어 읽기</b>",
+    "small": "<code>BETWEEN</code>, <code>&gt;=</code>, <code>LIKE 'AB%'</code>가 빠른 이유"
+   }
+  ],
+  "info": "📌 인덱스는 책 뒤의 <b>찾아보기(정렬된 목차)</b>예요. 정렬 순서를 그대로 쓸 수 있는 조건만 빠르게 찾을 수 있고, 정렬을 깨는 조건이면 목차가 있어도 <b>처음부터 다 읽게(Full Scan)</b> 됩니다.",
+  "compare_title": "인덱스가 있어도 못 타는 대표 패턴 3가지",
+  "compare": [
+   {
+    "kind": "warn",
+    "t": "컬럼 가공",
+    "d": "<code>TO_CHAR(order_dt,'YYYYMM')='202610'</code><br>→ 가공한 값은 목차에 없음"
+   },
+   {
+    "kind": "warn",
+    "t": "앞쪽 % LIKE",
+    "d": "<code>prod_nm LIKE '%노트북'</code><br>→ 시작 글자를 몰라 범위를 못 정함"
+   },
+   {
+    "kind": "warn",
+    "t": "묵시적 형변환",
+    "d": "문자 컬럼 <code>cust_id = 1001</code>(숫자)<br>→ Oracle이 <b>컬럼 쪽</b>을 숫자로 바꿔 비교"
+   }
+  ],
+  "deep": [
+   {
+    "t": "① 결합 인덱스는 순서가 전부",
+    "d": "<code>(CUST_ID, ORDER_DT)</code> 인덱스는 전화번호부처럼 CUST_ID로 먼저, 같은 값 안에서 ORDER_DT로 정렬돼요. 그래서 <b>CUST_ID 조건 없이 ORDER_DT만</b> 주면 범위를 정할 수 없습니다(Index Skip Scan 같은 예외는 있음). 선두 컬럼은 <b>항상 = 조건으로 쓰이는 컬럼</b>이 유리해요."
+   },
+   {
+    "t": "② 인덱스보다 Full Scan이 나을 때",
+    "d": "인덱스는 ROWID로 테이블을 <b>하나씩 찾아가는(랜덤 액세스)</b> 비용이 들어요. 조건이 테이블의 <b>큰 비율</b>을 고르면 차라리 통째로 읽는 Full Scan이 빠르고, 옵티마이저도 그렇게 고릅니다. 이 판단은 <b>통계 정보</b>에 기대기 때문에 통계가 오래되면 엉뚱한 선택을 하기도 해요."
+   },
+   {
+    "t": "③ NULL과 인덱스 — DB마다 다르다",
+    "d": "Oracle의 B-Tree 인덱스는 <b>인덱스 컬럼이 모두 NULL인 행은 저장하지 않아서</b> <code>WHERE col IS NULL</code>로는 단일 컬럼 인덱스를 못 씁니다. 결합 인덱스에 NOT NULL 컬럼을 함께 넣거나 기본값을 쓰는 식으로 풀어요. PostgreSQL은 NULL도 인덱스에 저장해 <code>IS NULL</code> 검색이 가능합니다."
+   },
+   {
+    "t": "④ 리뷰·면접에서 나오는 질문",
+    "d": "Q. <b>인덱스는 많을수록 좋은가요?</b><br>A. 조회는 빨라질 수 있지만 INSERT·UPDATE·DELETE 때마다 <b>인덱스도 함께 갱신</b>돼 쓰기가 느려지고 공간도 늘어요. 쿼리 패턴에 맞는 최소한의 인덱스를 두고, 안 쓰는 인덱스는 정리합니다."
+   }
+  ]
+ },
+ "lab": [
+  {
+   "icon": "🔎",
+   "title": "실습 1 · 테이블에 어떤 인덱스가 있나 (Oracle)",
+   "code": "SELECT index_name, column_name, column_position\n  FROM user_ind_columns\n WHERE table_name = 'TB_ORDER'\n ORDER BY index_name, column_position;",
+   "output": "INDEX_NAME    COLUMN_NAME  COLUMN_POSITION\n------------  -----------  ---------------\nIX_ORDER_01   CUST_ID                    1\nIX_ORDER_01   ORDER_DT                   2\nPK_TB_ORDER   ORDER_NO                   1",
+   "read": [
+    "<code>COLUMN_POSITION</code>이 결합 인덱스의 <b>컬럼 순서</b>예요",
+    "IX_ORDER_01은 CUST_ID가 선두 → <b>ORDER_DT만 조건</b>인 쿼리엔 효율이 낮아요",
+    "PK도 인덱스예요(PK_TB_ORDER). PK 조건 조회는 대부분 Unique Scan",
+    "다른 스키마 테이블이면 <code>all_ind_columns</code>에 <code>owner</code> 조건을 추가"
+   ]
+  },
+  {
+   "icon": "🧭",
+   "title": "실습 2 · 실행계획으로 인덱스 사용 확인",
+   "code": "EXPLAIN PLAN FOR\nSELECT * FROM tb_order\n WHERE cust_id = 'C001'\n   AND order_dt >= DATE '2026-10-01';\n\nSELECT * FROM TABLE(\n  DBMS_XPLAN.DISPLAY(NULL, NULL, 'BASIC'));",
+   "output": "-----------------------------------------------------------\n| Id | Operation                            | Name        |\n-----------------------------------------------------------\n|  0 | SELECT STATEMENT                     |             |\n|  1 |  TABLE ACCESS BY INDEX ROWID BATCHED | TB_ORDER    |\n|  2 |   INDEX RANGE SCAN                   | IX_ORDER_01 |\n-----------------------------------------------------------",
+   "read": [
+    "<b>안쪽(들여쓰기 깊은 것)부터</b> 읽어요: 인덱스 범위 스캔 → ROWID로 테이블 접근",
+    "<code>TABLE ACCESS FULL</code>이 보이면 테이블 전체를 읽는 것",
+    "<code>BATCHED</code>는 Oracle 12c 이상에서 보이는 표시예요",
+    "자세한 해석(Cost, Rows)은 DB 트랙 2번째 주제 '실행계획 읽는 법'에서 다룹니다"
+   ]
+  },
+  {
+   "icon": "🛠️",
+   "title": "실습 3 · 인덱스를 못 타는 조건 고치기",
+   "code": "-- ✗ 컬럼 가공 → Full Scan\nWHERE TO_CHAR(order_dt,'YYYYMM') = '202610'\n-- ✓ 컬럼은 그대로, 값을 범위로\nWHERE order_dt >= DATE '2026-10-01'\n  AND order_dt <  DATE '2026-11-01'\n\n-- ✗ 앞 % → 범위를 못 정함\nWHERE prod_nm LIKE '%노트북'\n-- ✓ 앞부분 고정이면 OK\nWHERE prod_nm LIKE '노트북%'\n\n-- ✗ 문자 컬럼에 숫자 → 형변환\nWHERE cust_id = 1001\n-- ✓ 타입 맞추기\nWHERE cust_id = '1001'",
+   "tip": "💡 MyBatis에서도 같아요. 문자 컬럼에 숫자 타입 파라미터를 넘기면 형변환이 생길 수 있으니 VO 필드 타입을 컬럼 타입과 맞추세요. 날짜는 <code>&lt;</code> 다음 달 1일 방식이 시·분·초까지 안전합니다."
+  }
+ ],
+ "mistakes": [
+  {
+   "t": "\"인덱스 만들었으니 끝\"",
+   "d": "조건을 어떻게 쓰느냐에 따라 안 탈 수 있어요. 만든 뒤 <b>실행계획으로 실제 사용 여부</b>를 확인하세요."
+  },
+  {
+   "t": "결합 인덱스 순서를 아무렇게나",
+   "d": "조회 화면의 필수 조건(항상 들어오는 = 조건)을 선두에 두지 않으면 인덱스가 반쪽짜리가 됩니다."
+  },
+  {
+   "t": "운영 시간에 대형 테이블 CREATE INDEX",
+   "d": "생성 중 테이블 변경 작업(DML)이 대기할 수 있어요. 작업 시간대를 잡거나, DB 버전·에디션이 지원하면 <code>ONLINE</code> 옵션을 검토하세요."
+  },
+  {
+   "t": "비슷한 인덱스 중복 생성",
+   "d": "(A), (A,B)처럼 겹치는 인덱스가 쌓이면 쓰기만 느려집니다. 추가 전에 기존 인덱스부터 조회하세요."
+  }
+ ],
+ "work": {
+  "items": [
+   "인덱스 추가도 <b>변경관리 대상</b> — 영향도(쓰기 성능·공간·배치)와 롤백(<code>DROP INDEX</code>)을 이행계획에",
+   "성능 개선 작업은 <b>전후 실행계획·수행시간</b> 캡처를 작업결과서에 남기기",
+   "SQL 리뷰 체크리스트에 \"인덱스 컬럼 가공 금지, 타입 일치, 앞 % 금지\" 3줄 넣기",
+   "느린 화면 문의가 오면 먼저 해당 SQL의 <b>실행계획</b>부터 — 대부분 여기서 원인이 보여요"
+  ]
+ },
+ "quiz": [
+  {
+   "q": "인덱스가 <code>(CUST_ID, ORDER_DT)</code>일 때 <code>WHERE order_dt = DATE '2026-10-13'</code>만 쓰면?",
+   "a": "선두 컬럼(CUST_ID) 조건이 없어 일반적인 Range Scan을 못 해요. Full Scan이나 Skip Scan이 될 수 있습니다."
+  },
+  {
+   "q": "<code>WHERE SUBSTR(order_no,1,4) = '2026'</code>을 인덱스를 타게 고치면?",
+   "a": "<code>WHERE order_no LIKE '2026%'</code> — 컬럼은 그대로, 앞부분 고정 LIKE로."
+  },
+  {
+   "q": "인덱스가 있는데도 옵티마이저가 Full Scan을 골랐다. 가능한 이유 두 가지는?",
+   "a": "조건이 <b>테이블의 큰 비율</b>을 고르는 경우, 또는 <b>통계 정보가 오래돼</b> 잘못 판단한 경우(그 외 컬럼 가공·형변환 등)."
+  },
+  {
+   "q": "인덱스를 많이 만들면 안 되는 이유는?",
+   "a": "INSERT·UPDATE·DELETE마다 인덱스도 갱신해야 해서 <b>쓰기가 느려지고</b> 저장 공간이 늘어나기 때문."
+  }
+ ],
+ "next": {
+  "track": "server",
+  "title": "필수 명령어(ps/top/df/du/free)",
+  "question": "\"서버가 느려요\" 연락을 받으면 <b>처음 1분</b> 동안 어떤 명령어를 칠까요?",
+  "tip": "CPU·메모리·디스크·프로세스를 한 바퀴 도는 순서를 정리해 봅니다."
+ },
+ "terms": [
+  {
+   "term": "인덱스 (Index)",
+   "desc": "키 값을 정렬해 두고 행의 위치를 가리키는 구조. 책의 찾아보기 역할"
+  },
+  {
+   "term": "B-Tree",
+   "desc": "Root·Branch·Leaf로 이루어진 균형 트리. 대부분의 DB 기본 인덱스 구조"
+  },
+  {
+   "term": "리프 블록 (Leaf Block)",
+   "desc": "B-Tree 맨 아래 단계. 정렬된 키와 ROWID가 저장되고 서로 연결돼 있음"
+  },
+  {
+   "term": "ROWID",
+   "desc": "Oracle에서 행이 저장된 물리적 위치 주소. 인덱스가 테이블 행을 찾아갈 때 사용"
+  },
+  {
+   "term": "Index Range Scan",
+   "desc": "인덱스 리프를 따라 조건 범위만 읽는 방식"
+  },
+  {
+   "term": "Table Full Scan",
+   "desc": "테이블 전체를 처음부터 끝까지 읽는 방식 (실행계획: TABLE ACCESS FULL)"
+  },
+  {
+   "term": "결합 인덱스 (Composite Index)",
+   "desc": "두 개 이상 컬럼으로 만든 인덱스. 컬럼 순서가 성능을 좌우함"
+  },
+  {
+   "term": "선두 컬럼",
+   "desc": "결합 인덱스의 첫 번째 컬럼. 이 컬럼 조건이 있어야 범위를 좁힐 수 있음"
+  },
+  {
+   "term": "묵시적 형변환",
+   "desc": "타입이 다른 값을 비교할 때 DB가 자동으로 타입을 바꾸는 것. 컬럼 쪽이 바뀌면 인덱스를 못 씀"
+  },
+  {
+   "term": "옵티마이저 (Optimizer)",
+   "desc": "통계 정보를 바탕으로 SQL을 어떤 방법으로 실행할지(실행계획) 정하는 DB 엔진"
+  }
+ ],
+ "cheat": [
+  {
+   "cmd": "SELECT index_name, column_name, column_position FROM user_ind_columns WHERE table_name = '<테이블>' ORDER BY 1, 3;",
+   "desc": "테이블의 인덱스와 컬럼 순서 확인 (Oracle)"
+  },
+  {
+   "cmd": "EXPLAIN PLAN FOR <SQL>;  SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);",
+   "desc": "예상 실행계획 보기 (Oracle)"
+  },
+  {
+   "cmd": "EXEC DBMS_STATS.GATHER_TABLE_STATS(USER, '<테이블>');",
+   "desc": "테이블 통계 정보 수집 (운영은 DBA와 협의)"
+  },
+  {
+   "cmd": "CREATE INDEX <인덱스명> ON <테이블> (<선두컬럼>, <컬럼2>);",
+   "desc": "결합 인덱스 생성 (운영 반영은 변경관리·작업 시간 확인)"
+  },
+  {
+   "cmd": "WHERE <날짜컬럼> >= DATE '2026-10-01' AND <날짜컬럼> < DATE '2026-11-01'",
+   "desc": "날짜 컬럼 가공 없이 월 단위 조회하는 패턴"
+  },
+  {
+   "cmd": "DROP INDEX <인덱스명>;",
+   "desc": "인덱스 삭제 (인덱스 추가 작업의 롤백)"
+  }
+ ],
+ "extras": {
+  "comm": {
+   "theme": "회의·회의록",
+   "cases": [
+    {
+     "title": "회의 전 안건 공유",
+     "situation": "주문 조회가 느려 개선 회의를 잡아야 한다.",
+     "bad": "내일 회의 때 자세히 얘기해요~",
+     "good": "[회의 안내] 10/14(수) 14:00, 주문 조회 지연 개선.<br>현황: 평균 8초(예시), 인덱스 미사용으로 추정(실행계획 첨부).<br><b>결정할 것</b>: ① 인덱스 추가 여부 ② 반영 일정"
+    },
+    {
+     "title": "회의록 정리",
+     "situation": "회의가 끝났다. 참석자에게 결과를 공유해야 한다.",
+     "bad": "인덱스 추가하기로 했습니다. 끝!",
+     "good": "<b>결정</b>: IX_ORDER_02(ORDER_DT) 추가<br><b>담당/일정</b>: 개발 담당 · 10/16 18:00 반영<br><b>미결</b>: 배치 쓰기 영향 확인 (DBA, 10/15까지)<br><b>다음</b>: 10/17 결과 공유"
+    },
+    {
+     "title": "회의 중 바로 답 못 할 때",
+     "situation": "\"인덱스 추가하면 다른 화면은 괜찮아요?\"라는 질문을 받았는데 확인이 안 됐다.",
+     "bad": "아마 괜찮을 거예요.",
+     "good": "지금 정확히 말씀드리기 어려워서, 같은 테이블을 쓰는 쿼리를 확인해 <b>오늘 17시까지</b> 메일로 정리드리겠습니다."
+    }
+   ],
+   "points": [
+    "<b>회의 전</b>: 현황 + 근거 자료 + \"결정할 것\"을 미리 — 회의가 짧아져요",
+    "<b>회의록</b>: 결정 · 담당 · 기한 · 미결 4가지만 있으면 충분",
+    "<b>모르면</b>: 추측 대신 \"언제까지 확인해서 드릴지\" 약속"
+   ],
+   "template": "[회의록] 주제 · 일시 · 참석\n결정: ...\n담당/기한: ...\n미결(누가, 언제까지): ...\n다음 일정: ...",
+   "phrases": [
+    "이번 회의에서 결정이 필요한 사항은 ① ~ ② ~입니다.",
+    "오늘 회의 결정 사항과 담당·기한 정리해 공유드립니다.",
+    "미결 사항은 ~님이 ~까지 확인해 주시기로 했습니다.",
+    "정확한 확인 후 ~시까지 정리해서 드리겠습니다."
+   ]
+  },
+  "cert": {
+   "exam": "SQLD",
+   "subject": "SQL 활용 · 인덱스",
+   "summary": "<b>인덱스 스캔 방식</b><table><tr><th>방식</th><th>언제</th></tr><tr><td>Index Unique Scan</td><td>유니크 인덱스에 = 조건 (결과 1건)</td></tr><tr><td>Index Range Scan</td><td>범위 조건, 일부 컬럼 조건</td></tr><tr><td>Index Full Scan</td><td>인덱스 전체를 순서대로</td></tr><tr><td>Index Skip Scan</td><td>선두 컬럼 조건 없이 후행 컬럼 조건</td></tr></table><b>인덱스를 못 쓰는 대표 경우</b><br>컬럼 가공(함수·연산) · 앞쪽 % LIKE · 묵시적 형변환 · (Oracle) 단일 컬럼 IS NULL",
+   "tip": "\"틀린 것 고르기\"에서 <b>인덱스가 많을수록 DML도 빨라진다</b>는 단골 오답이에요.",
+   "questions": [
+    {
+     "level": "쉬움",
+     "q": "B-Tree 인덱스의 리프 블록에 저장되는 것으로 가장 적절한 것은?",
+     "choices": [
+      "테이블 행 전체 데이터",
+      "인덱스 키 값과 ROWID",
+      "SQL 실행계획",
+      "테이블 통계 정보"
+     ],
+     "answer": 1,
+     "explain": "리프 블록에는 <b>정렬된 인덱스 키와 ROWID</b>가 있어서, 키로 찾은 뒤 ROWID로 테이블 행을 찾아갑니다."
+    },
+    {
+     "level": "보통",
+     "q": "<code>PROD_NM</code> 컬럼에 단일 인덱스가 있다. 인덱스 Range Scan이 가능한 조건은?",
+     "choices": [
+      "<code>WHERE PROD_NM LIKE '노트북%'</code>",
+      "<code>WHERE PROD_NM LIKE '%노트북'</code>",
+      "<code>WHERE UPPER(PROD_NM) = 'NOTEBOOK'</code>",
+      "<code>WHERE SUBSTR(PROD_NM, 2, 3) = '트북'</code>"
+     ],
+     "answer": 0,
+     "explain": "앞부분이 고정된 LIKE는 정렬 순서로 범위를 정할 수 있어요. 앞쪽 %나 컬럼에 함수를 씌운 조건은 일반 인덱스로 범위를 정할 수 없습니다(함수 기반 인덱스가 따로 있으면 예외)."
+    },
+    {
+     "level": "함정",
+     "q": "인덱스에 대한 설명으로 <b>틀린</b> 것은?",
+     "choices": [
+      "결합 인덱스는 컬럼 순서에 따라 성능이 달라진다",
+      "대량의 데이터를 조회할 때는 Full Table Scan이 더 유리할 수 있다",
+      "인덱스가 많을수록 INSERT 성능도 좋아진다",
+      "인덱스 컬럼을 가공하면 인덱스를 정상적으로 사용하지 못할 수 있다"
+     ],
+     "answer": 2,
+     "explain": "INSERT·UPDATE·DELETE 때는 인덱스도 함께 갱신해야 해서 <b>인덱스가 많을수록 DML은 느려집니다.</b>"
+    }
+   ]
+  },
+  "eng": {
+   "items": [
+    {
+     "en": "execution plan",
+     "ko": "실행계획",
+     "where": "DB 튜닝 문서·SQL 리뷰",
+     "ex": "Check the execution plan before and after adding the index.",
+     "ex_ko": "인덱스 추가 전후로 실행계획을 확인하세요."
+    },
+    {
+     "en": "full table scan",
+     "ko": "테이블 전체 스캔",
+     "where": "실행계획·성능 분석",
+     "ex": "The query performs a full table scan because the column is wrapped in a function.",
+     "ex_ko": "컬럼에 함수가 씌워져 있어 쿼리가 테이블 전체를 스캔한다."
+    },
+    {
+     "en": "index range scan",
+     "ko": "인덱스 범위 스캔",
+     "where": "실행계획",
+     "ex": "With the new index, the plan changed to an index range scan.",
+     "ex_ko": "새 인덱스로 실행계획이 인덱스 범위 스캔으로 바뀌었다."
+    },
+    {
+     "en": "implicit conversion",
+     "ko": "묵시적(자동) 형변환",
+     "where": "DB 문서·SQL 리뷰 코멘트",
+     "ex": "Avoid implicit conversion by matching the bind variable type.",
+     "ex_ko": "바인드 변수 타입을 맞춰 묵시적 형변환을 피하세요."
+    },
+    {
+     "en": "selectivity",
+     "ko": "선택도 (조건이 전체 중 몇 %의 행을 고르는지)",
+     "where": "옵티마이저·튜닝 문서",
+     "ex": "The index is useful only when the condition has good selectivity.",
+     "ex_ko": "조건이 적은 비율의 행만 고를 때(선택도가 좋을 때) 인덱스가 유용하다."
+    }
+   ],
+   "tip": "Oracle 실행계획은 영어 그대로 나와요. <b>ACCESS / FILTER / FULL / RANGE / ROWID</b> 다섯 단어만 알아도 절반은 읽힙니다.",
+   "reading": {
+    "title": "실행계획의 Predicate 정보 읽기 (Oracle)",
+    "text": "Predicate Information (identified by operation id):\n---------------------------------------------------\n   1 - filter(TO_CHAR(\"ORDER_DT\",'YYYYMM')='202610')\n   2 - access(\"CUST_ID\"='C001')",
+    "lines": [
+     {
+      "en": "Predicate Information (identified by operation id)",
+      "ko": "조건(WHERE절)이 실행계획의 <b>몇 번 단계(Id)</b>에서 쓰였는지 보여주는 영역"
+     },
+     {
+      "en": "2 - access(\"CUST_ID\"='C001')",
+      "ko": "<b>access</b> = 인덱스로 <b>범위를 좁히는 데</b> 쓰인 조건 → 좋음"
+     },
+     {
+      "en": "1 - filter(TO_CHAR(\"ORDER_DT\",...)='202610')",
+      "ko": "<b>filter</b> = 일단 읽은 뒤 <b>걸러내기만</b> 한 조건 → 인덱스에 못 쓰였다는 뜻"
+     },
+     {
+      "en": "TO_CHAR(\"ORDER_DT\",'YYYYMM')",
+      "ko": "컬럼이 가공돼 있어서 access가 아니라 filter로 밀려났어요"
+     }
+    ],
+    "note": "💡 느린 쿼리를 볼 때 <b>\"내가 기대한 조건이 access에 있나, filter에 있나\"</b>만 확인해도 원인이 빨리 보여요. Predicate 정보는 <code>DBMS_XPLAN.DISPLAY</code>를 기본(TYPICAL) 형식으로 출력하면 나옵니다."
+   }
+  }
+ }
+}
