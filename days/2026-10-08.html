@@ -7,11 +7,12 @@
 <meta property="og:url" content="https://stepup-alpha-ten.vercel.app/days/2026-10-08.html"><meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#7048e8"><link rel="manifest" href="../manifest.webmanifest">
 <link rel="apple-touch-icon" href="../assets/icons/apple-touch-icon.png"><link rel="icon" type="image/png" href="../assets/icons/icon-192.png">
+<script>try{if(localStorage.getItem("theme")==="dark")document.documentElement.dataset.theme="dark"}catch(e){}</script>
 <link rel="stylesheet" href="../assets/style.css"></head>
 <body class="net" data-root="../" data-path="days/2026-10-08.html"><div class="page"><main>
 <div class="topbar"><a href="../index.html">← 메인</a><span class="daynav"><a href="../days/2026-10-09.html">10/09 ›</a></span><span class="daynav"><a href="../치트시트.html">📋 치트시트</a><a href="../용어집.html">📖 용어집</a></span></div>
 <section class="hero"><div class="chips"><span class="chip">네트워크</span><span class="chip">Day 1</span><span class="chip">10/08 (목)</span><span class="chip">⏱ 15분</span><span class="chip lv">기초</span></div>
-<h1>포트·방화벽·연결 확인</h1><p class="lead">"서버가 안 붙어요"를 들었을 때, 처음 5분 안에 원인 범위를 좁히는 법</p><div class="steps"><a href="#review">① 복습</a><a href="#concept">② 개념</a><a href="#lab">③ 실습</a><a href="#work">④ 실무</a><a href="#quiz">⑤ 퀴즈</a><a href="#next">⑥ 예습</a></div></section>
+<h1>포트·방화벽·연결 확인</h1><p class="lead">"서버가 안 붙어요"를 들었을 때, 처음 5분 안에 원인 범위를 좁히는 법</p><ul class="keys"><li>ping 실패 ≠ 서버 다운. 판단은 <b>포트 연결 테스트</b>로</li><li><b>refused</b>는 서비스(LISTEN 없음), <b>timeout</b>은 방화벽 의심</li><li>방화벽 신청은 출발지(호출 서버)·목적지·포트·용도·기간 + 테스트 캡처</li></ul><div class="steps"><a href="#review">① 복습</a><a href="#concept">② 개념</a><a href="#lab">③ 실습</a><a href="#work">④ 실무</a><a href="#quiz">⑤ 퀴즈</a><a href="#next">⑥ 예습</a></div></section>
 <div class="ptabs"><button data-p="dev">📘 개발공부</button><button data-p="comm">💬 커뮤니케이션</button><button data-p="cert">🎓 자격증</button><button data-p="eng">🌐 기술영어</button></div>
 <div class="panel" data-p="dev"><div class="grid">
 <section class="card span2" id="review"><div class="card-h"><span class="ic">🔁</span>워밍업 복습<small>첫날이라 트랙별 기본기 진단</small></div><div class="tiles c3"><div class="tile"><div class="from">기본기 · DB</div><p>인덱스 컬럼에 함수를 씌우면 <code>WHERE TO_CHAR(reg_dt,'YYYYMMDD') = '20261008'</code> 어떻게 될까?</p>

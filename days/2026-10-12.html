@@ -7,11 +7,12 @@
 <meta property="og:url" content="https://stepup-alpha-ten.vercel.app/days/2026-10-12.html"><meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#3b63e0"><link rel="manifest" href="../manifest.webmanifest">
 <link rel="apple-touch-icon" href="../assets/icons/apple-touch-icon.png"><link rel="icon" type="image/png" href="../assets/icons/icon-192.png">
+<script>try{if(localStorage.getItem("theme")==="dark")document.documentElement.dataset.theme="dark"}catch(e){}</script>
 <link rel="stylesheet" href="../assets/style.css"></head>
 <body class="dev" data-root="../" data-path="days/2026-10-12.html"><div class="page"><main>
 <div class="topbar"><a href="../index.html">← 메인</a><span class="daynav"><a href="../days/2026-10-09.html">‹ 10/09</a></span><span class="daynav"><a href="../치트시트.html">📋 치트시트</a><a href="../용어집.html">📖 용어집</a></span></div>
 <section class="hero"><div class="chips"><span class="chip">개발</span><span class="chip">Day 3</span><span class="chip">10/12 (월)</span><span class="chip">⏱ 15분</span><span class="chip lv">기초</span></div>
-<h1>JVM 메모리(Heap/Stack)와 GC</h1><p class="lead">객체는 어디에 만들어지고 언제 치워지는지, 그리고 OutOfMemoryError가 났을 때 무엇부터 볼지</p><div class="steps"><a href="#review">① 복습</a><a href="#concept">② 개념</a><a href="#lab">③ 실습</a><a href="#work">④ 실무</a><a href="#quiz">⑤ 퀴즈</a><a href="#next">⑥ 예습</a></div></section>
+<h1>JVM 메모리(Heap/Stack)와 GC</h1><p class="lead">객체는 어디에 만들어지고 언제 치워지는지, 그리고 OutOfMemoryError가 났을 때 무엇부터 볼지</p><ul class="keys"><li>변수(주소)는 <b>Stack</b>, <code>new</code>로 만든 객체는 <b>Heap</b></li><li>OOM이 나면 <code>-Xmx</code>부터 올리지 말고 <b>덤프·로그부터</b> 확보</li><li><code>jstat</code>에서 Old가 안 내려가고 Full GC가 계속 늘면 위험 신호</li></ul><div class="steps"><a href="#review">① 복습</a><a href="#concept">② 개념</a><a href="#lab">③ 실습</a><a href="#work">④ 실무</a><a href="#quiz">⑤ 퀴즈</a><a href="#next">⑥ 예습</a></div></section>
 <div class="ptabs"><button data-p="dev">📘 개발공부</button><button data-p="comm">💬 커뮤니케이션</button><button data-p="cert">🎓 자격증</button><button data-p="eng">🌐 기술영어</button></div>
 <div class="panel" data-p="dev"><div class="grid">
 <section class="card span2" id="review"><div class="card-h"><span class="ic">🔁</span>워밍업 복습<small>지난 공부 3문항 + 기본기 1문항</small></div><div class="tiles c3"><div class="tile"><div class="from">10/09 · SM</div><p>이행계획서의 롤백 계획에서 "문제가 생기면 롤백"이라고만 쓰면 왜 부족할까?</p>

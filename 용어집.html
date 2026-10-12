@@ -7,6 +7,7 @@
 <meta property="og:url" content="https://stepup-alpha-ten.vercel.app/용어집.html"><meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#3b63e0"><link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png"><link rel="icon" type="image/png" href="assets/icons/icon-192.png">
+<script>try{if(localStorage.getItem("theme")==="dark")document.documentElement.dataset.theme="dark"}catch(e){}</script>
 <link rel="stylesheet" href="assets/style.css"></head>
 <body class="dev" data-root=""><div class="page full"><main><div class="topbar"><a href="index.html">← 메인</a><span></span></div>
 <section class="hero"><div class="chips"><span class="chip">가나다·ABC 순</span></div><h1>📖 용어집</h1>
@@ -65,4 +66,4 @@ function ap(){var s=q.value.trim().toLowerCase();document.querySelectorAll("[dat
 el.style.display=((f==="all"||el.dataset.track===f)&&(!s||el.textContent.toLowerCase().indexOf(s)>=0))?"":"none";});}
 document.querySelectorAll(".filters button").forEach(function(b){b.onclick=function(){
 document.querySelectorAll(".filters button").forEach(function(x){x.classList.remove("on")});b.classList.add("on");f=b.dataset.f;ap();};});
-q.oninput=ap;})();</script></body></html>
+q.oninput=ap;})();</script><script src="assets/app.js"></script></body></html>

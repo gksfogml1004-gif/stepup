@@ -44,6 +44,7 @@ def head(title, desc, root, og_img, url, color="#3b63e0"):
 <meta property="og:url" content="{e(SITE + '/' + url if SITE else url)}"><meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="{color}"><link rel="manifest" href="{root}manifest.webmanifest">
 <link rel="apple-touch-icon" href="{root}assets/icons/apple-touch-icon.png"><link rel="icon" type="image/png" href="{root}assets/icons/icon-192.png">
+<script>try{{if(localStorage.getItem("theme")==="dark")document.documentElement.dataset.theme="dark"}}catch(e){{}}</script>
 <link rel="stylesheet" href="{root}assets/style.css"></head>'''
 
 TCOL = {"dev": "#3b63e0", "db": "#1f9d55", "server": "#e8590c", "net": "#7048e8", "sm": "#0c8599", "review": "#7a8394"}
@@ -165,7 +166,7 @@ def page(d, prev, nxt):
 <body class="{tk}" data-root="{root}" data-path="{e(d["path"])}"><div class="page"><main>
 <div class="topbar"><a href="../index.html">← 메인</a><span class="daynav">{pv}{nv}</span><span class="daynav"><a href="../치트시트.html">📋 치트시트</a><a href="../용어집.html">📖 용어집</a></span></div>
 <section class="hero"><div class="chips"><span class="chip">{e(short(tk))}</span><span class="chip">Day {d["day"]}</span><span class="chip">{md(date)} ({wd(date)})</span><span class="chip">⏱ {d.get("minutes",15)}분</span>{f'<span class="chip lv">{e(d["level"])}</span>' if d.get("level") else ""}</div>
-<h1>{e(d["title"])}</h1><p class="lead">{d.get("lead","")}</p><div class="steps">{steps}</div></section>
+<h1>{e(d["title"])}</h1><p class="lead">{d.get("lead","")}</p>{('<ul class="keys">' + "".join(f"<li>{k}</li>" for k in d["key_points"]) + "</ul>") if d.get("key_points") else ""}<div class="steps">{steps}</div></section>
 <div class="ptabs"><button data-p="dev">📘 개발공부</button>{'<button data-p="comm">💬 커뮤니케이션</button>' if cm else ""}{'<button data-p="cert">🎓 자격증</button>' if ct else ""}{'<button data-p="eng">🌐 기술영어</button>' if en else ""}</div>
 {dev}{comm}{cert}{eng}<dl id="today-terms" hidden>{terms}</dl></main>{SIDE}</div>
 <button class="fab">📖 용어</button><script src="../assets/data.js"></script><script src="../assets/app.js"></script></body></html>'''
@@ -256,7 +257,7 @@ w("용어집.html", head("용어집 · 아침 개발공부", f"지금까지 공�
 <section class="hero"><div class="chips"><span class="chip">가나다·ABC 순</span></div><h1>📖 용어집</h1>
 <p class="lead">지금까지 공부한 용어·기술영어 표현 {nterms}개 · 카드 아래 링크로 배운 날로 이동</p></section>
 <section class="card"><div class="filters">{btns(used)}<input id="q" class="search" placeholder="용어나 설명 검색 (예: 방화벽, rollback)"></div>
-<div class="ggrid">{gc or '<div class="empty">아직 용어가 없습니다.</div>'}</div></section></main></div>{JS}</body></html>''')
+<div class="ggrid">{gc or '<div class="empty">아직 용어가 없습니다.</div>'}</div></section></main></div>{JS}<script src="assets/app.js"></script></body></html>''')
 
 cheats = [dict(c, track=d["track"], date=md(d["date"]), path=d["path"]) for d in days for c in d.get("cheat", [])]
 groups = ""

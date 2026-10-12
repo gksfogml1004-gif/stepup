@@ -82,7 +82,7 @@
     var main=document.querySelector("main"), done={};
     if(main){
       var walker=document.createTreeWalker(main,NodeFilter.SHOW_TEXT,{acceptNode:function(n){
-        var p=n.parentElement; if(!p||p.closest("pre,code,.term,h1,summary,#today-terms,.hero,.ptabs,.topbar,.choice,.eng-item .en,.phr,.tr dt")) return NodeFilter.FILTER_REJECT;
+        var p=n.parentElement; if(!p||p.closest("pre,code,.term,h1,.card-h,summary,#today-terms,.hero,.ptabs,.topbar,.choice,.eng-item .en,.phr,.tr dt")) return NodeFilter.FILTER_REJECT;
         return n.nodeValue.trim()?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_REJECT;}});
       var nodes=[]; while(walker.nextNode()) nodes.push(walker.currentNode);
       var pairs=[]; all.forEach(function(x){var m=x.term.match(/^(.*?)\s*\((.*)\)\s*$/);(m?[m[1],m[2]]:[x.term]).forEach(function(k){if(k.length>=2&&!/^[a-z ]+$/.test(k)) pairs.push([k,x]);});});
@@ -128,3 +128,13 @@ document.querySelectorAll(".copy").forEach(function(b){b.onclick=function(){
   var t=b.dataset.t, done=function(){b.textContent="복사됨";setTimeout(function(){b.textContent="복사"},1200)};
   try{ if(navigator.clipboard){navigator.clipboard.writeText(t).then(done,function(){prompt("복사하세요",t)});} else {prompt("복사하세요",t);} }catch(e){prompt("복사하세요",t)}
 };});
+
+/* 테마 전환 (기본: 밝은 화면) */
+(function(){
+  var R=document.documentElement, slot=document.querySelector(".topbar .daynav:last-child")||document.querySelector(".topbar")||document.querySelector(".hero .steps");
+  if(!slot) return;
+  var b=document.createElement("button"); b.className="themebtn";
+  var paint=function(){b.innerHTML=R.dataset.theme==="dark"?"☀️<span class=\"t\"> 밝게</span>":"🌙<span class=\"t\"> 어둡게</span>"};
+  b.onclick=function(){ if(R.dataset.theme==="dark"){delete R.dataset.theme; try{localStorage.removeItem("theme")}catch(e){}} else {R.dataset.theme="dark"; try{localStorage.setItem("theme","dark")}catch(e){}} paint(); };
+  paint(); slot.appendChild(b);
+})();
