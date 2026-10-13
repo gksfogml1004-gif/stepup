@@ -1,0 +1,409 @@
+{
+ "date": "2026-10-15",
+ "day": 6,
+ "cycle": 1,
+ "track": "net",
+ "topic_no": 2,
+ "level": "기초",
+ "title": "OSI 7계층·TCP/IP 실무 관점",
+ "lead": "계층은 외우는 표가 아니라 \"어디서 끊겼나\"를 나누는 지도 — 증상으로 몇 층 문제인지 가려내기",
+ "one_liner": "아래층부터: IP(L3) → 포트(L4) → 응답(L7).",
+ "key_points": [
+  "계층은 장애 범위를 나누는 지도 — <b>아래층부터</b> 확인",
+  "L3 <code>ping</code>·경로 → L4 포트 연결 → L7 HTTP 응답 코드",
+  "<b>502</b>는 뒤(WAS)가 응답 불가, <b>504</b>는 뒤가 너무 느림"
+ ],
+ "review_note": "어제 3문항 + 지난주 1문항",
+ "review": [
+  {
+   "from": "10/14 · 서버",
+   "ref": "2026-10-14-q0",
+   "q": "코어 4개 서버에서 load average <code>7.9, 6.1, 3.4</code>. 어떤 상태?",
+   "a": "코어 수보다 높고 1분 값이 가장 커서 <b>부하가 지금 올라가는 중</b>."
+  },
+  {
+   "from": "10/14 · 서버",
+   "ref": "2026-10-14-q1",
+   "q": "free 300Mi, available 6Gi, swap 사용 0. 메모리 부족일까?",
+   "a": "아니요. 캐시로 쓰는 중일 뿐 <b>available이 넉넉</b>해서 정상."
+  },
+  {
+   "from": "10/14 · 서버",
+   "ref": "2026-10-14-q3",
+   "q": "로그를 rm으로 지웠는데 df 사용량이 그대로다. 확인 명령은?",
+   "a": "<code>lsof +L1</code> — 프로세스가 열고 있는 삭제 파일. 해당 프로세스 재기동으로 해제."
+  },
+  {
+   "from": "10/08 · 네트워크",
+   "ref": "2026-10-08-q2",
+   "q": "<code>ss -tlnp</code>에 <code>127.0.0.1:9090 LISTEN</code>. 다른 서버에서 붙을 수 있을까?",
+   "a": "불가. 루프백에만 바인딩 → <code>0.0.0.0</code>(또는 서버 IP)으로 변경."
+  }
+ ],
+ "concept": {
+  "title": "TCP/IP 4계층으로 보는 장애 위치",
+  "steps": [
+   {
+    "t": "네트워크 접근 (L1·L2)",
+    "d": "케이블·랜카드·<b>MAC 주소</b>",
+    "small": "<code>ip -br link</code>로 UP/DOWN<br>담당: 망·인프라"
+   },
+   {
+    "t": "인터넷 (L3)",
+    "d": "<b>IP 주소·라우팅</b>",
+    "small": "<code>ping</code>, <code>traceroute</code>, <code>ip route</code><br>담당: 망"
+   },
+   {
+    "t": "전송 (L4)",
+    "d": "<b>TCP/UDP·포트</b>",
+    "small": "<code>nc -zv</code>, <code>ss</code><br>담당: 보안(방화벽)·서버"
+   },
+   {
+    "t": "응용 (L5~L7)",
+    "d": "<b>HTTP·DNS·TLS</b>",
+    "small": "<code>curl -v</code>, <code>nslookup</code><br>담당: 개발·WAS"
+   }
+  ],
+  "info": "📌 10/08에 배운 \"ping → 포트 → 응답\" 3단계가 바로 <b>L3 → L4 → L7</b> 확인이었어요. 아래층이 통과해야 위층을 의심할 의미가 있습니다.",
+  "compare_title": "증상으로 계층 가르기",
+  "compare": [
+   {
+    "kind": "",
+    "t": "경로가 끊김 (L3)",
+    "d": "<code>traceroute</code>가 중간에서 멈춤, 게이트웨이 무응답<br>→ 망 담당에게 <b>구간</b> 전달"
+   },
+   {
+    "kind": "warn",
+    "t": "포트만 안 됨 (L4)",
+    "d": "ping OK인데 포트 timeout / refused<br>→ 방화벽 또는 서비스 기동"
+   },
+   {
+    "kind": "ok",
+    "t": "연결 OK, 응답 이상 (L7)",
+    "d": "<code>Connected to</code> 후 404·502·504·인증서 오류<br>→ 웹서버·WAS·애플리케이션"
+   }
+  ],
+  "deep": [
+   {
+    "t": "① 캡슐화 — 장비마다 보는 깊이가 다르다",
+    "d": "보낼 데이터에 TCP 헤더(<b>포트</b>) → IP 헤더(<b>IP</b>) → 이더넷 헤더(<b>MAC</b>)가 차례로 붙어요. 그래서 <b>스위치</b>는 MAC(L2), <b>라우터</b>는 IP(L3), <b>L4 로드밸런서·방화벽</b>은 IP+포트, <b>L7 장비</b>는 URL·쿠키까지 보고 판단합니다. \"L4 장비라 URL별 분배가 안 된다\" 같은 말이 여기서 나와요."
+   },
+   {
+    "t": "② TCP와 UDP",
+    "d": "<b>TCP</b>는 연결을 맺고 순서·재전송을 보장(HTTP, DB 연결). <b>UDP</b>는 연결 없이 빠르게 보냄(DNS 조회, NTP, syslog 기본). UDP는 응답을 기대하지 않아서 <code>nc -u</code>로 \"열렸다\"가 나와도 확실하지 않아요. 실제 서비스 요청(예: <code>nslookup</code>)으로 확인하는 게 정확합니다."
+   },
+   {
+    "t": "③ 502와 504 — 웹서버 뒤 WAS 구조에서",
+    "d": "Apache·WebtoB 같은 웹서버(또는 L7 장비)가 앞, WAS가 뒤에 있을 때:<br><b>502 Bad Gateway</b> — 뒤에서 <b>정상 응답을 못 받음</b>(WAS 다운, 연결 거부)<br><b>504 Gateway Timeout</b> — 뒤가 <b>제한 시간 안에 응답 안 함</b>(WAS 처리 지연, DB 느림)<br>→ 502면 WAS 기동·포트부터, 504면 WAS 스레드 덤프·느린 SQL부터."
+   },
+   {
+    "t": "④ 리뷰·면접에서 나오는 질문",
+    "d": "Q. <b>OSI 7계층을 실무에서 어디에 쓰나요?</b><br>A. 장애 때 <b>어느 층에서 끊겼는지</b>로 범위를 좁히고, 망(L1~L3)·보안(L4)·개발(L7) 중 <b>누가 볼지</b> 정하는 기준으로 씁니다. 각 층마다 확인 명령과 증거를 남기면 책임 공방 없이 빨리 해결돼요."
+   }
+  ]
+ },
+ "lab": [
+  {
+   "icon": "🧭",
+   "title": "실습 1 · L3: 내 IP와 경로 확인",
+   "code": "# 인터페이스 상태와 IP (간단히)\nip -br addr\n# 라우팅: 다른 대역은 어디로 나가나\nip route\n# 목적지까지 경로 (Windows: tracert -d)\ntraceroute -n 192.0.2.10",
+   "output": "lo      UNKNOWN  127.0.0.1/8\neth0    UP       192.0.2.11/24\n\ndefault via 192.0.2.1 dev eth0\n192.0.2.0/24 dev eth0 proto kernel scope link src 192.0.2.11",
+   "read": [
+    "<code>UP</code>이어야 랜카드가 살아 있는 것, IP는 <code>/24</code> 같은 대역 표기와 함께",
+    "<b>default via</b>가 게이트웨이 — 다른 대역으로 가는 문",
+    "같은 대역(<code>192.0.2.0/24</code>)은 게이트웨이 없이 직접 통신",
+    "<code>traceroute</code>에서 <code>* * *</code>가 계속되면 그 구간을 망 담당에게 전달 (ICMP를 막은 장비일 수도 있음)"
+   ]
+  },
+  {
+   "icon": "🔌",
+   "title": "실습 2 · L4: 연결 상태 한눈에 보기",
+   "code": "# TCP 연결을 상태별로 세기\nss -tan | awk 'NR>1{print $1}' | sort | uniq -c\n# 닫히지 않고 쌓이는 연결과 프로세스\nss -tanp state close-wait | head",
+   "output": "    312 ESTAB\n     18 LISTEN\n    845 TIME-WAIT\n     57 CLOSE-WAIT",
+   "read": [
+    "<b>ESTAB</b>: 연결 중. 평소보다 급증하면 요청 폭주나 커넥션 풀 문제",
+    "<b>TIME-WAIT</b>: 내가 먼저 끊은 연결의 정리 대기. 많아도 대개 정상",
+    "<b>CLOSE-WAIT</b>가 <b>계속 늘면</b> 우리 프로그램이 소켓을 안 닫는 것 → 연결 누수 버그 의심",
+    "<code>-p</code>로 어떤 프로세스의 연결인지 확인 (root 권한 필요할 수 있음)"
+   ]
+  },
+  {
+   "icon": "🌐",
+   "title": "실습 3 · L7: HTTP 요청·응답 들여다보기",
+   "code": "# 본문은 버리고 요청/응답 헤더만\ncurl -sv -o /dev/null http://192.0.2.10/api/health",
+   "output": "*   Trying 192.0.2.10:80...\n* Connected to 192.0.2.10 (192.0.2.10) port 80\n> GET /api/health HTTP/1.1\n> Host: 192.0.2.10\n> User-Agent: curl/7.76.1\n>\n< HTTP/1.1 502 Bad Gateway\n< Content-Type: text/html",
+   "read": [
+    "<code>Connected to</code>가 보이면 <b>L3·L4는 통과</b> — 네트워크 탓이 아님",
+    "<code>&gt;</code>는 내가 보낸 요청, <code>&lt;</code>는 받은 응답",
+    "<b>502</b> → 웹서버는 살아 있고 <b>뒤의 WAS</b>가 문제. WAS 기동·포트부터",
+    "HTTPS면 <code>SSL certificate problem</code> 같은 줄로 인증서 문제도 여기서 보여요"
+   ]
+  }
+ ],
+ "mistakes": [
+  {
+   "t": "모든 연결 문제를 \"네트워크 문제\"로 넘김",
+   "d": "망 담당은 증거 없이는 움직이기 어려워요. <b>어느 층까지 통과했는지</b> 결과와 함께 요청하세요."
+  },
+  {
+   "t": "502와 504를 같은 장애로 처리",
+   "d": "502는 WAS가 응답 불가(다운·거부), 504는 응답이 느림. 확인할 곳이 완전히 달라요."
+  },
+  {
+   "t": "CLOSE-WAIT 증가를 방치",
+   "d": "소켓을 안 닫는 버그는 시간이 지나면 연결·파일 핸들 고갈로 장애가 돼요. 추이를 보고 코드의 close 누락을 찾으세요."
+  },
+  {
+   "t": "UDP 서비스를 TCP 포트 테스트로 판단",
+   "d": "DNS·NTP·syslog는 UDP예요. <code>nc -zv</code>(TCP) 결과로는 알 수 없으니 실제 질의로 확인하세요."
+  }
+ ],
+ "work": {
+  "items": [
+   "장애보고서 원인란에 <b>계층과 증거</b>를 함께: \"L4 — 8080/TCP timeout(방화벽), ping·경로 정상\"",
+   "망·보안 담당에게 요청할 땐 출발지·목적지·포트·시각 + <b>통과한 층까지의 결과</b> 첨부",
+   "정기점검 항목에 <b>CLOSE-WAIT 개수</b> 추이 추가 — 연결 누수 조기 발견",
+   "시스템 구성도에 장비별 계층(L4 LB, L7 웹서버, WAS)을 표시해 두면 장애 때 동선이 빨라져요"
+  ]
+ },
+ "quiz": [
+  {
+   "q": "ping 정상, <code>nc -zv</code> 8080 timeout. 몇 층 문제이고 누구에게 요청할까?",
+   "a": "<b>L4</b>. 포트만 막힌 것 → 방화벽(보안 담당) 확인, 서버의 LISTEN 여부도 함께."
+  },
+  {
+   "q": "<code>curl -v</code>에 <code>Connected to</code> 후 <code>HTTP/1.1 504 Gateway Timeout</code>. 무엇부터 볼까?",
+   "a": "네트워크는 통과. 뒤의 <b>WAS가 느린 것</b> → WAS 스레드 덤프, 느린 SQL, 커넥션 풀부터."
+  },
+  {
+   "q": "CLOSE-WAIT 연결이 하루 종일 계속 늘어난다. 의심할 것은?",
+   "a": "우리 프로그램이 <b>소켓(HTTP·DB 연결)을 닫지 않는 버그</b>. close 누락·try-with-resources 미사용 확인."
+  },
+  {
+   "q": "L4 로드밸런서로는 \"/api는 A서버, /web은 B서버\"로 나눌 수 없는 이유는?",
+   "a": "L4는 <b>IP와 포트</b>까지만 봐서 URL(L7 정보)을 모르기 때문. URL별 분배는 L7 장비·웹서버에서."
+  }
+ ],
+ "next": {
+  "track": "sm",
+  "title": "요구사항정의서·영향도 분석",
+  "question": "\"조회가 느리니 개선해 주세요\"라는 요청을 받으면, 정의서에 <b>무엇을</b> 더 물어서 적어야 할까요?",
+  "tip": "좋은 요구사항은 \"테스트할 수 있는 문장\"이라는 기준을 내일 봅니다."
+ },
+ "terms": [
+  {
+   "term": "OSI 7계층",
+   "desc": "네트워크 통신을 7단계로 나눈 참조 모델. 실무에선 장애 위치를 나누는 기준으로 씀"
+  },
+  {
+   "term": "TCP/IP 4계층",
+   "desc": "실제 인터넷이 쓰는 4단계 모델: 네트워크 접근·인터넷·전송·응용"
+  },
+  {
+   "term": "캡슐화 (Encapsulation)",
+   "desc": "데이터에 계층별 헤더(포트→IP→MAC)를 차례로 붙여 보내는 과정"
+  },
+  {
+   "term": "MAC 주소",
+   "desc": "랜카드마다 붙은 하드웨어 주소. 같은 네트워크 안에서 전달할 때 사용(L2)"
+  },
+  {
+   "term": "게이트웨이 (Gateway)",
+   "desc": "다른 네트워크 대역으로 나가는 출구 장비(보통 라우터). ip route의 default via"
+  },
+  {
+   "term": "TCP / UDP",
+   "desc": "전송 계층 프로토콜. TCP는 연결·순서 보장, UDP는 연결 없이 빠르게(DNS 등)"
+  },
+  {
+   "term": "TIME-WAIT",
+   "desc": "먼저 연결을 끊은 쪽이 잠시 남겨 두는 정리 대기 상태. 많아도 대개 정상"
+  },
+  {
+   "term": "CLOSE-WAIT",
+   "desc": "상대가 끊었는데 내 프로그램이 아직 소켓을 안 닫은 상태. 계속 늘면 누수 버그"
+  },
+  {
+   "term": "502 Bad Gateway",
+   "desc": "앞단(웹서버·프록시)이 뒤(WAS)에서 정상 응답을 못 받았을 때의 HTTP 상태"
+  },
+  {
+   "term": "504 Gateway Timeout",
+   "desc": "앞단이 기다리는 시간 안에 뒤(WAS)가 응답하지 않았을 때의 HTTP 상태"
+  }
+ ],
+ "cheat": [
+  {
+   "cmd": "ip -br addr",
+   "desc": "인터페이스 상태와 IP를 한 줄씩 (간단 보기)"
+  },
+  {
+   "cmd": "ip route",
+   "desc": "라우팅 테이블 — default via가 게이트웨이"
+  },
+  {
+   "cmd": "traceroute -n <IP>   /   tracert -d <IP>",
+   "desc": "목적지까지 경로, 이름 조회 없이 빠르게 (Linux / Windows)"
+  },
+  {
+   "cmd": "ss -tan | awk 'NR>1{print $1}' | sort | uniq -c",
+   "desc": "TCP 연결을 상태별(ESTAB, TIME-WAIT, CLOSE-WAIT)로 세기"
+  },
+  {
+   "cmd": "ss -tanp state close-wait",
+   "desc": "닫히지 않고 쌓이는 연결과 해당 프로세스"
+  },
+  {
+   "cmd": "curl -sv -o /dev/null <URL>",
+   "desc": "본문 없이 HTTP 요청·응답 헤더와 상태 코드만 확인"
+  },
+  {
+   "cmd": "nslookup <도메인>",
+   "desc": "DNS 조회 (UDP 서비스는 실제 질의로 확인)"
+  }
+ ],
+ "extras": {
+  "comm": {
+   "theme": "질문하기",
+   "cases": [
+    {
+     "title": "망 담당자에게 문의",
+     "situation": "갑자기 다른 서버로 연결이 안 된다. 망 담당자에게 확인을 요청해야 한다.",
+     "bad": "네트워크가 안 되는데 좀 봐주실 수 있나요?",
+     "good": "[문의] 192.0.2.11 → 192.0.2.10 <b>TCP 8080</b>이 <b>10:05부터 timeout</b>입니다. ping·경로는 정상, 대상 서버 LISTEN도 확인했습니다(캡처 첨부). 그 시간 전후로 <b>방화벽·라우팅 변경</b>이 있었는지 확인 부탁드립니다."
+    },
+    {
+     "title": "막혔을 때 선배에게 질문",
+     "situation": "CLOSE-WAIT 원인을 30분째 못 찾고 있다.",
+     "bad": "이거 왜 안 돼요?",
+     "good": "CLOSE-WAIT이 계속 늘어서 소켓을 안 닫는 곳을 찾고 있는데요, HttpClient 사용부 3곳까지는 close를 확인했습니다. <b>다른 의심 지점이 있을까요?</b> 10분 정도 여유 있으실 때 봐주시면 감사하겠습니다."
+    },
+    {
+     "title": "모호한 요청을 확인할 때",
+     "situation": "\"화면이 좀 느린 것 같아요\"라는 요청이 들어왔다.",
+     "bad": "네 알겠습니다. (그리고 추측으로 작업)",
+     "good": "확인차 여쭤봅니다. 느린 게 <b>첫 화면 로딩</b>인지, <b>검색 후 결과</b>인지요? 그리고 목표로 하시는 시간이 있을까요? (예: 3초 이내)"
+    }
+   ],
+   "points": [
+    "<b>상황 + 이미 해 본 것 + 구체적인 질문</b>: 상대가 같은 확인을 반복하지 않게",
+    "<b>상대 시간 배려</b>: 얼마나 걸릴지, 언제 괜찮은지",
+    "<b>모호하면 예시를 들어 되묻기</b>: \"A인가요, B인가요?\""
+   ],
+   "template": "[문의] 무엇이 (현상·시각)\n해 본 것 (확인 결과·캡처)\n궁금한 것 (구체적인 질문 1~2개)\n부탁 (기한·시간 배려)",
+   "phrases": [
+    "확인차 여쭤봅니다. ~인가요, 아니면 ~인가요?",
+    "지금까지 ~까지는 확인했고, ~ 부분에서 막혀 있습니다.",
+    "편하실 때 10분 정도만 봐주실 수 있을까요?",
+    "제가 이해한 게 맞는지 정리해 보면, ~ 맞을까요?"
+   ]
+  },
+  "cert": {
+   "exam": "네트워크관리사 2급",
+   "subject": "네트워크 일반 · OSI 7계층",
+   "summary": "<b>OSI 7계층 핵심</b><table><tr><th>계층</th><th>단위·주소</th><th>장비·프로토콜</th></tr><tr><td>7 응용</td><td>메시지</td><td>HTTP, FTP, DNS</td></tr><tr><td>4 전송</td><td>세그먼트·포트</td><td>TCP, UDP</td></tr><tr><td>3 네트워크</td><td>패킷·IP</td><td>라우터, IP, ICMP</td></tr><tr><td>2 데이터링크</td><td>프레임·MAC</td><td>스위치, 브리지</td></tr><tr><td>1 물리</td><td>비트</td><td>허브, 리피터, 케이블</td></tr></table>5 세션·6 표현은 TCP/IP 모델에서 응용 계층에 합쳐져요.",
+   "tip": "\"장비 ↔ 계층\" 짝짓기가 단골이에요: <b>허브 1 · 스위치 2 · 라우터 3</b>.",
+   "questions": [
+    {
+     "level": "쉬움",
+     "q": "라우터가 동작하는 OSI 계층은?",
+     "choices": [
+      "데이터링크 계층",
+      "네트워크 계층",
+      "전송 계층",
+      "응용 계층"
+     ],
+     "answer": 1,
+     "explain": "라우터는 <b>IP 주소</b>를 보고 경로를 정하는 <b>네트워크 계층(3계층)</b> 장비예요. 스위치는 MAC을 보는 2계층."
+    },
+    {
+     "level": "보통",
+     "q": "주로 <b>UDP</b>를 사용하는 프로토콜은?",
+     "choices": [
+      "HTTP",
+      "FTP",
+      "DNS",
+      "SMTP"
+     ],
+     "answer": 2,
+     "explain": "<b>DNS 조회</b>는 주로 UDP 53번을 써요(응답이 크거나 영역 전송일 땐 TCP). HTTP·FTP·SMTP는 TCP."
+    },
+    {
+     "level": "함정",
+     "q": "계층과 요소의 연결이 <b>틀린</b> 것은?",
+     "choices": [
+      "IP – 네트워크 계층",
+      "TCP – 전송 계층",
+      "MAC 주소 – 네트워크 계층",
+      "HTTP – 응용 계층"
+     ],
+     "answer": 2,
+     "explain": "<b>MAC 주소는 데이터링크 계층(2계층)</b>이에요. IP 주소(3계층)와 바꿔 내는 함정이 자주 나옵니다."
+    }
+   ]
+  },
+  "eng": {
+   "items": [
+    {
+     "en": "Bad Gateway (502)",
+     "ko": "뒤 서버에서 정상 응답을 못 받음",
+     "where": "웹서버·프록시 응답",
+     "ex": "The proxy returned 502 Bad Gateway because the backend was down.",
+     "ex_ko": "백엔드가 내려가 있어 프록시가 502를 반환했다."
+    },
+    {
+     "en": "Gateway Timeout (504)",
+     "ko": "뒤 서버 응답이 시간 초과",
+     "where": "웹서버·로드밸런서 응답",
+     "ex": "Requests over 60 seconds ended with 504 Gateway Timeout.",
+     "ex_ko": "60초를 넘는 요청은 504로 끝났다."
+    },
+    {
+     "en": "upstream / backend",
+     "ko": "뒤쪽 서버 (요청을 넘겨받는 WAS 등)",
+     "where": "웹서버 설정·에러 로그",
+     "ex": "Check whether the upstream server is listening on port 8080.",
+     "ex_ko": "뒤쪽 서버가 8080 포트에서 대기 중인지 확인하세요."
+    },
+    {
+     "en": "Connection reset by peer",
+     "ko": "상대방이 연결을 강제로 끊음",
+     "where": "애플리케이션·네트워크 에러",
+     "ex": "java.net.SocketException: Connection reset by peer",
+     "ex_ko": "상대(서버·장비)가 연결을 RST로 끊었다 — 방화벽 세션 만료·상대 재기동 등 의심"
+    },
+    {
+     "en": "handshake",
+     "ko": "연결 수립 과정 (TCP 3-way, TLS)",
+     "where": "TLS·네트워크 로그",
+     "ex": "The TLS handshake failed due to an expired certificate.",
+     "ex_ko": "인증서 만료로 TLS 연결 수립에 실패했다."
+    }
+   ],
+   "tip": "웹서버 로그의 <b>upstream</b>은 \"내 뒤에 있는 서버(WAS)\"라는 뜻이에요. 이 단어가 보이면 WAS 쪽을 보면 됩니다.",
+   "reading": {
+    "title": "웹서버 에러 로그 읽기 (nginx 형식 예시)",
+    "text": "[error] connect() failed (111: Connection refused) while connecting\n  to upstream, request: \"GET /api/orders HTTP/1.1\",\n  upstream: \"http://192.0.2.10:8080/api/orders\"\n[error] upstream timed out (110: Connection timed out) while reading\n  response header from upstream, request: \"GET /api/report HTTP/1.1\"",
+    "lines": [
+     {
+      "en": "connect() failed (111: Connection refused) while connecting to upstream",
+      "ko": "WAS에 <b>연결하다 거부</b>당함 → WAS 다운·포트 오류 → 사용자에겐 <b>502</b>"
+     },
+     {
+      "en": "upstream: \"http://192.0.2.10:8080/...\"",
+      "ko": "요청을 넘기려던 <b>뒤 서버 주소</b> — 어느 WAS인지 바로 알 수 있어요"
+     },
+     {
+      "en": "upstream timed out (110: Connection timed out) while reading response header",
+      "ko": "연결은 됐는데 <b>응답을 기다리다 시간 초과</b> → WAS 처리 지연 → 사용자에겐 <b>504</b>"
+     },
+     {
+      "en": "request: \"GET /api/report HTTP/1.1\"",
+      "ko": "느렸던 <b>요청 URL</b> — 이 기능의 SQL·로직부터 확인"
+     }
+    ],
+    "note": "💡 Apache·WebtoB는 로그 형식이 다르지만 <b>refused(거부) / timed out(시간 초과)</b>라는 핵심 단어는 같아요. 10/08의 refused vs timeout 구분이 L7에서도 그대로 쓰입니다."
+   }
+  }
+ }
+}

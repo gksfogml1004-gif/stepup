@@ -134,6 +134,26 @@
       "title": "필수 명령어(ps/top/df/du/free)",
       "one_liner": "uptime → free → df → ps, 1분이면 범인의 방향이 보인다.",
       "path": "days/2026-10-14.html"
+    },
+    {
+      "date": "2026-10-15",
+      "day": 6,
+      "cycle": 1,
+      "track": "net",
+      "topic_no": 2,
+      "title": "OSI 7계층·TCP/IP 실무 관점",
+      "one_liner": "아래층부터: IP(L3) → 포트(L4) → 응답(L7).",
+      "path": "days/2026-10-15.html"
+    },
+    {
+      "date": "2026-10-16",
+      "day": 7,
+      "cycle": 1,
+      "track": "sm",
+      "topic_no": 2,
+      "title": "요구사항정의서·영향도 분석",
+      "one_liner": "좋은 요구사항은 테스트할 수 있는 문장, 좋은 영향도 분석은 근거가 남는 검색.",
+      "path": "days/2026-10-16.html"
     }
   ],
   "rotation": [

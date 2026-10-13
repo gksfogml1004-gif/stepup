@@ -211,7 +211,8 @@ latest = days[-1] if days else None
 if latest:
     w("today/index.html", head(f'오늘의 공부 · {md(latest["date"])} {short(latest["track"])} · {latest["title"]}', f'📌 {latest["one_liner"]} — 개발 15분 + 커뮤니케이션 · 자격증 · 기술영어',
         "../", f'assets/og/{latest["track"]}.png', "today/") + f'''<body><p style="padding:20px">오늘의 공부로 이동 중… <a href="../{e(latest["path"])}">바로 가기</a></p>
-<script>location.replace("../{latest["path"]}"+location.hash)</script></body></html>''')
+<script>(function(){{var D={json.dumps([[x["date"], x["path"]] for x in days])},n=new Date(),t=n.getFullYear()+"-"+String(n.getMonth()+1).padStart(2,"0")+"-"+String(n.getDate()).padStart(2,"0"),p=D[0][1];
+D.forEach(function(x){{if(x[0]<=t)p=x[1]}});location.replace("../"+p+location.hash)}})()</script></body></html>''')
 
 hero_today = f'''<a class="card" href="{e(latest["path"])}" style="display:block;color:inherit;border-left:6px solid var(--{latest["track"]})">
 <div class="card-h" style="margin-bottom:6px"><span class="ic">📘</span>최근 공부<small>{latest["date"]} ({wd(latest["date"])}) · Day {latest["day"]}</small></div>
