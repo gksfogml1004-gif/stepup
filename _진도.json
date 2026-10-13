@@ -124,6 +124,16 @@
       "title": "인덱스 동작 원리(B-Tree)",
       "one_liner": "인덱스 컬럼은 그대로 두고, 값 쪽을 가공하라.",
       "path": "days/2026-10-13.html"
+    },
+    {
+      "date": "2026-10-14",
+      "day": 5,
+      "cycle": 1,
+      "track": "server",
+      "topic_no": 1,
+      "title": "필수 명령어(ps/top/df/du/free)",
+      "one_liner": "uptime → free → df → ps, 1분이면 범인의 방향이 보인다.",
+      "path": "days/2026-10-14.html"
     }
   ],
   "rotation": [
