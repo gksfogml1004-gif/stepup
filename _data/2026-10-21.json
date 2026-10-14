@@ -1,0 +1,418 @@
+{
+ "date": "2026-10-21",
+ "day": 10,
+ "cycle": 1,
+ "track": "server",
+ "topic_no": 2,
+ "level": "기초",
+ "title": "로그 보기(tail/grep/less/awk)",
+ "lead": "수 GB 로그에서 원하는 시간대·에러만 앞뒤 상황과 함께 뽑아내는 명령 조합",
+ "one_liner": "tail로 지켜보고, grep으로 찾고, less로 넓게 보고, awk·uniq로 센다.",
+ "key_points": [
+  "실시간은 <code>tail -F</code> (로그가 바뀌어도 따라감)",
+  "<code>grep -B -A</code>로 <b>앞뒤 문맥</b>까지 — Caused by를 놓치지 않기",
+  "대용량은 <b>vi 대신 less</b>, 압축 로그는 <code>zgrep</code>, 시간대(UTC/KST) 먼저 확인"
+ ],
+ "review_note": "어제 3문항 + 지난주 1문항",
+ "review": [
+  {
+   "from": "10/20 · DB",
+   "ref": "2026-10-20-q0",
+   "q": "실행계획은 어디부터 읽을까?",
+   "a": "<b>가장 안쪽(깊은 들여쓰기)</b>부터, 같은 깊이면 위에서 아래로."
+  },
+  {
+   "from": "10/20 · DB",
+   "ref": "2026-10-20-q1",
+   "q": "E-Rows 1,200 / A-Rows 98,000. 의심할 것은?",
+   "a": "옵티마이저 추정 실패 → <b>통계가 오래됨</b>·분포 쏠림."
+  },
+  {
+   "from": "10/20 · DB",
+   "ref": "2026-10-20-q3",
+   "q": "NESTED LOOPS 조인이 유리한 조건은?",
+   "a": "<b>소량</b> 조회 + 뒤 테이블 조인 컬럼 <b>인덱스</b>."
+  },
+  {
+   "from": "10/14 · 서버",
+   "ref": "2026-10-14-q3",
+   "q": "로그를 rm으로 지웠는데 df가 그대로. 확인 명령은?",
+   "a": "<code>lsof +L1</code> — 열린 채 삭제된 파일. 오늘은 로그를 <b>지우지 않고 읽는 법</b>을 봐요."
+  }
+ ],
+ "concept": {
+  "title": "로그를 다루는 네 가지 동작",
+  "steps": [
+   {
+    "t": "지켜보기",
+    "d": "<code>tail -F</code>",
+    "small": "새로 쌓이는 줄을 실시간으로<br>-F는 롤링돼도 새 파일을 따라감"
+   },
+   {
+    "t": "찾기",
+    "d": "<code>grep</code>",
+    "small": "-n 줄번호 · -i 대소문자 무시<br>-B/-A 앞뒤 문맥 · -v 제외"
+   },
+   {
+    "t": "넓게 보기",
+    "d": "<code>less</code>",
+    "small": "파일 전체를 안 읽고 필요한 만큼만<br>/검색 · n 다음 · G 끝 · F 실시간"
+   },
+   {
+    "t": "세기",
+    "d": "<code>awk</code> · <code>sort</code> · <code>uniq -c</code>",
+    "small": "시간대별·코드별 건수 집계<br>파이프(|)로 이어 붙이기"
+   }
+  ],
+  "info": "📌 리눅스 명령은 <b>파이프(|)로 이어 붙이는 레고</b>예요. \"찾고 → 자르고 → 정렬하고 → 센다\"를 한 줄로 만들 수 있으면 로그 분석의 80%는 끝납니다.",
+  "compare_title": "자주 헷갈리는 3가지",
+  "compare": [
+   {
+    "kind": "warn",
+    "t": "tail -f vs tail -F",
+    "d": "<b>-f</b>는 로그가 롤링되면 옛 파일을 계속 봄 → \"로그가 안 찍혀요\" 착각<br><b>-F</b>는 새 파일을 다시 열어 따라감"
+   },
+   {
+    "kind": "warn",
+    "t": "vi로 큰 로그 열기",
+    "d": "수 GB 파일을 통째로 메모리에 올려 <b>서버가 느려질 수 있음</b><br>→ <code>less</code>는 필요한 부분만"
+   },
+   {
+    "kind": "ok",
+    "t": "grep -c vs uniq -c",
+    "d": "<code>grep -c</code>: 전체 건수 하나<br><code>sort | uniq -c</code>: <b>종류별</b> 건수"
+   }
+  ],
+  "deep": [
+   {
+    "t": "① 시간 범위만 잘라 보기",
+    "d": "로그가 \"날짜 시간 레벨 메시지\" 형식이면 awk로 시간 열을 비교할 수 있어요. 시간 문자열이 같은 형식(HH:MM:SS)이면 문자열 비교로도 범위가 맞습니다.",
+    "code": "# 09:00:00 ~ 09:10:00 사이 줄만\nawk '$2 >= \"09:00:00\" && $2 <= \"09:10:00\"' app.log\n# 그중 ERROR만\nawk '$2 >= \"09:00:00\" && $2 <= \"09:10:00\" \\\n     && /ERROR/' app.log"
+   },
+   {
+    "t": "② 롤링·압축된 지난 로그",
+    "d": "지난 날짜 로그는 <code>app.log.2026-10-20.gz</code>처럼 압축돼 있는 경우가 많아요. 풀지 않고 <code>zgrep</code>, <code>zcat | grep</code>으로 바로 검색합니다. 풀어서 복사하면 <b>디스크가 찰 수 있어요</b>(10/14 복습)."
+   },
+   {
+    "t": "③ 서버 시간대부터 확인",
+    "d": "서버·로그가 <b>UTC</b>로 찍히면 한국 시간(KST)보다 9시간 느려요. 사용자가 \"9시에 오류\"라고 하면 UTC 로그에선 00시를 봐야 합니다. <code>date</code>나 <code>timedatectl</code>로 먼저 확인하고, 장애보고서엔 <b>KST로 통일</b>해 적으세요."
+   },
+   {
+    "t": "④ 리뷰·면접에서 나오는 질문",
+    "d": "Q. <b>운영 로그에서 특정 에러가 언제부터 몇 번 났는지 어떻게 보나요?</b><br>A. <code>grep</code>으로 에러 줄을 뽑고, 시간 앞부분만 <code>cut</code>으로 잘라 <code>sort | uniq -c</code>로 <b>시간대별 건수</b>를 셉니다. 처음 나온 시각은 <code>grep -m 1</code>로 확인해요."
+   }
+  ]
+ },
+ "lab": [
+  {
+   "icon": "👀",
+   "title": "실습 1 · 실시간으로 에러만 지켜보기",
+   "code": "tail -F /app/logs/app.log \\\n  | grep --line-buffered -E \"ERROR|Exception\"",
+   "output": "2026-10-21 09:12:03 ERROR [exec-7] OrderService - 주문 저장 실패\njava.sql.SQLException: ORA-00001: unique constraint violated",
+   "read": [
+    "<code>-E</code>로 여러 단어를 <b>|</b>(또는)로 묶어 찾기",
+    "<code>--line-buffered</code>를 빼면 파이프 뒤 출력이 <b>몇 초씩 늦게</b> 보일 수 있어요",
+    "끝낼 땐 <b>Ctrl+C</b> — 운영 서버에 켜 둔 채 자리 비우지 않기"
+   ]
+  },
+  {
+   "icon": "🔎",
+   "title": "실습 2 · 앞뒤 문맥과 건수",
+   "code": "# 첫 발생 위치 (줄번호 포함, 1건만)\ngrep -n -m 1 \"OutOfMemoryError\" app.log\n# 앞 3줄, 뒤 10줄까지 함께 보기\ngrep -n -B 3 -A 10 \"OutOfMemoryError\" app.log | less\n# 전체 에러 건수\ngrep -c \"ERROR\" app.log",
+   "output": "18452:2026-10-21 09:12:03 ERROR [exec-7] Request processing failed\n...\n1287",
+   "read": [
+    "<code>-m 1</code>: 처음 한 건만 → <b>언제부터</b> 시작됐는지",
+    "<code>-B/-A</code>로 에러 <b>직전 상황</b>(어떤 요청이었나)과 <b>Caused by</b>까지 한 번에",
+    "결과가 길면 <code>| less</code>로 넘겨 위아래로 이동하며 보기"
+   ]
+  },
+  {
+   "icon": "📊",
+   "title": "실습 3 · 시간대별 에러 집계",
+   "code": "# 로그 형식: 2026-10-21 09:12:03 ERROR ...\ngrep \"ERROR\" app.log \\\n  | cut -c1-13 | sort | uniq -c",
+   "output": "      3 2026-10-21 08\n    152 2026-10-21 09\n     11 2026-10-21 10",
+   "read": [
+    "<code>cut -c1-13</code>: 앞 13글자(날짜 + 시) → <b>시간 단위</b>로 묶기",
+    "09시에 152건 급증 → <b>그 시각 전후에 무엇이 바뀌었나</b>(배포·배치·트래픽) 확인",
+    "분 단위로 보려면 <code>cut -c1-16</code>"
+   ]
+  },
+  {
+   "icon": "🌐",
+   "title": "실습 4 · 액세스 로그로 응답 코드 세기",
+   "code": "# 형식 예: 192.0.2.50 - - [21/Oct/2026:09:12:03 +0900]\n#          \"GET /api/orders HTTP/1.1\" 502 312\nawk '{print $9}' access.log | sort | uniq -c | sort -rn",
+   "output": "  48210 200\n   1532 502\n    204 404\n     12 500",
+   "read": [
+    "<code>$9</code>는 공백으로 나눈 9번째 칸 = <b>HTTP 상태 코드</b> (로그 형식에 따라 위치가 다를 수 있음)",
+    "<code>sort -rn</code>: 건수 많은 순",
+    "<b>502가 1,532건</b> → 10/15에 배운 대로 뒤쪽 WAS 상태부터"
+   ]
+  }
+ ],
+ "mistakes": [
+  {
+   "t": "수 GB 로그를 vi로 열기",
+   "d": "메모리를 크게 써서 운영 서버가 느려질 수 있어요. <code>less</code>나 <code>grep</code>으로."
+  },
+  {
+   "t": "tail -f로 보다 \"로그가 안 찍힌다\" 판단",
+   "d": "자정 롤링 후엔 옛 파일을 보고 있을 수 있어요. <b>-F</b>를 쓰거나 파일을 다시 열기."
+  },
+  {
+   "t": "에러 한 줄만 보고 원인 판단",
+   "d": "진짜 원인은 아래 <b>Caused by</b>에 있어요. <code>-A</code>로 뒤까지 보세요."
+  },
+  {
+   "t": "서버 시간대를 확인하지 않음",
+   "d": "UTC 로그를 KST로 착각하면 엉뚱한 시간대를 봅니다. <code>date</code>로 먼저 확인."
+  }
+ ],
+ "work": {
+  "items": [
+   "장애 문의가 오면 <b>첫 발생 시각</b>(<code>grep -m 1</code>)과 <b>시간대별 건수</b>를 먼저 뽑아 공지·보고서에 사용",
+   "장애보고서 타임라인은 로그 시각을 근거로, 시간대는 <b>KST로 통일</b>",
+   "로그 형식(날짜 위치·레벨)을 운영 매뉴얼에 적어 두면 누구나 같은 명령을 쓸 수 있어요",
+   "자주 쓰는 조합은 <b>치트시트</b>에 쌓아 두고 복사해서 사용"
+  ]
+ },
+ "quiz": [
+  {
+   "q": "로그가 자정에 롤링됐는데 <code>tail -f</code> 화면에 새 줄이 안 나온다. 왜, 어떻게?",
+   "a": "<b>옛 파일</b>을 계속 보고 있어서. <code>tail -F</code>로 다시 열면 새 파일을 따라가요."
+  },
+  {
+   "q": "에러가 <b>처음 발생한 줄</b>만 줄번호와 함께 보려면?",
+   "a": "<code>grep -n -m 1 \"키워드\" 로그파일</code>"
+  },
+  {
+   "q": "ERROR를 <b>시간대별</b>로 세려면 어떤 조합을 쓸까? (형식: 2026-10-21 09:12:03 ERROR ...)",
+   "a": "<code>grep \"ERROR\" app.log | cut -c1-13 | sort | uniq -c</code>"
+  },
+  {
+   "q": "사용자는 \"오전 9시에 오류\"라는데 로그엔 그 시간에 아무것도 없다. 무엇부터 확인할까?",
+   "a": "서버·로그 <b>시간대</b>. UTC라면 00시 근처를 봐야 해요(<code>date</code>, <code>timedatectl</code>)."
+  }
+ ],
+ "next": {
+  "track": "net",
+  "title": "IP·서브넷·CIDR·게이트웨이",
+  "question": "<code>/24</code>와 <code>/26</code>은 IP를 각각 몇 개 쓸 수 있을까요? 같은 대역인지는 어떻게 판단할까요?",
+  "tip": "방화벽 신청서에 \"/24\"를 적을 때 무슨 뜻인지 정확히 알고 쓰게 됩니다."
+ },
+ "terms": [
+  {
+   "term": "tail -F",
+   "desc": "파일 끝을 실시간으로 보며, 파일이 교체(롤링)돼도 새 파일을 따라가는 옵션"
+  },
+  {
+   "term": "grep 문맥 옵션 (-B/-A/-C)",
+   "desc": "찾은 줄의 앞(Before)·뒤(After)·앞뒤(Context) N줄을 함께 출력"
+  },
+  {
+   "term": "파이프 (|)",
+   "desc": "앞 명령의 출력을 뒤 명령의 입력으로 넘기는 기호"
+  },
+  {
+   "term": "정규표현식 (Regex)",
+   "desc": "문자열 패턴을 표현하는 규칙. grep -E \"ERROR|WARN\"처럼 사용"
+  },
+  {
+   "term": "awk",
+   "desc": "줄을 칸(필드)으로 나눠 조건·출력을 처리하는 텍스트 처리 도구. $1, $2…"
+  },
+  {
+   "term": "uniq -c",
+   "desc": "연속된 같은 줄을 하나로 묶고 개수를 세는 명령. 보통 sort 뒤에 사용"
+  },
+  {
+   "term": "액세스 로그 (Access Log)",
+   "desc": "웹서버가 요청마다 남기는 기록(IP·시각·URL·상태 코드·크기)"
+  },
+  {
+   "term": "로그 레벨 (Log Level)",
+   "desc": "로그 중요도 등급. DEBUG < INFO < WARN < ERROR"
+  },
+  {
+   "term": "UTC / KST",
+   "desc": "협정 세계시 / 한국 표준시(UTC+9). 서버 로그 시간 해석의 기준"
+  }
+ ],
+ "cheat": [
+  {
+   "cmd": "tail -F <로그> | grep --line-buffered -E \"ERROR|Exception\"",
+   "desc": "실시간으로 에러만 지켜보기"
+  },
+  {
+   "cmd": "grep -n -m 1 \"<키워드>\" <로그>",
+   "desc": "처음 발생한 줄과 줄번호"
+  },
+  {
+   "cmd": "grep -n -B 3 -A 10 \"<키워드>\" <로그> | less",
+   "desc": "앞 3줄·뒤 10줄 문맥과 함께 보기"
+  },
+  {
+   "cmd": "grep \"ERROR\" <로그> | cut -c1-13 | sort | uniq -c",
+   "desc": "시간대별 에러 건수 (날짜+시 형식 기준)"
+  },
+  {
+   "cmd": "awk '{print $9}' <액세스로그> | sort | uniq -c | sort -rn",
+   "desc": "HTTP 상태 코드별 건수"
+  },
+  {
+   "cmd": "zgrep \"<키워드>\" <로그>.gz",
+   "desc": "압축된 지난 로그를 풀지 않고 검색"
+  },
+  {
+   "cmd": "less +F <로그>",
+   "desc": "less로 열어 실시간 따라가기 (Ctrl+C 후 자유 이동)"
+  },
+  {
+   "cmd": "timedatectl",
+   "desc": "서버 시간대(UTC/KST) 확인"
+  }
+ ],
+ "extras": {
+  "comm": {
+   "theme": "인수인계",
+   "cases": [
+    {
+     "title": "출장·휴가 전 인수인계",
+     "situation": "이틀간 자리를 비운다. 대신 대응할 동료에게 넘겨야 한다.",
+     "bad": "특별한 건 없어요. 무슨 일 있으면 연락 주세요~",
+     "good": "[인수인계 10/21~22] ① <b>진행 중</b>: SR-2026-0012 인덱스 추가 — DBA 검토 대기, 회신 오면 작업계획서 그대로 18시 반영 ② <b>주의</b>: 정산 배치 09시 완료 여부 확인(로그 위치·명령 첨부) ③ <b>연락</b>: 급한 장애는 전화, 나머지는 메신저로 모아 주세요."
+    },
+    {
+     "title": "인수인계 받을 때",
+     "situation": "동료의 업무를 맡게 됐다. 설명을 들었지만 애매하다.",
+     "bad": "네 알겠습니다! (질문 없음)",
+     "good": "정리해 보면 ①은 DBA 회신 후 반영, ②는 매일 9시 확인 — 맞을까요? 그리고 <b>배치가 실패하면 재수행해도 되는지</b>, 누구에게 먼저 알려야 하는지도 알려 주세요."
+    },
+    {
+     "title": "진행 중 장애를 넘길 때",
+     "situation": "교대 시간인데 장애 원인 분석이 아직 진행 중이다.",
+     "bad": "아직 원인 모르겠어요. 나머지 부탁해요.",
+     "good": "[이관] 09시대 ERROR 152건(시간대별 집계 첨부). 확인한 것: DB·디스크 정상. 의심: 09:05 배포분. <b>다음 할 일</b>: WAS2 배포 파일 비교. 관련 로그 위치·명령은 아래에 정리했습니다."
+    }
+   ],
+   "points": [
+    "<b>진행 중 · 주의할 것 · 연락 방법</b> 세 덩어리로",
+    "<b>확인한 것과 다음 할 일</b>을 구분 — 받는 사람이 처음부터 다시 하지 않게",
+    "받는 쪽은 <b>요약해서 되묻기</b> — 오해를 그 자리에서 잡기"
+   ],
+   "template": "[인수인계 기간]\n① 진행 중: 건 · 상태 · 다음 할 일\n② 주의: 정기 확인 · 위험 포인트 (명령·위치)\n③ 연락: 급할 때 / 아닐 때",
+   "phrases": [
+    "진행 중인 건은 ~이고, 다음 할 일은 ~입니다.",
+    "확인한 것은 ~, 아직 확인 안 한 것은 ~입니다.",
+    "제가 이해한 게 맞는지 정리해 보면, ~ 맞을까요?",
+    "급한 건은 전화, 나머지는 메신저로 모아 주시면 복귀 후 처리하겠습니다."
+   ]
+  },
+  "cert": {
+   "exam": "리눅스마스터 2급",
+   "subject": "리눅스 운영 및 관리 · 텍스트 처리·리다이렉션",
+   "summary": "<b>자주 나오는 옵션·기호</b><table><tr><th>표현</th><th>뜻</th></tr><tr><td>tail -f</td><td>파일 끝 실시간 출력</td></tr><tr><td>grep -v</td><td>패턴과 일치하지 <b>않는</b> 줄</td></tr><tr><td>grep -i</td><td>대소문자 무시</td></tr><tr><td>cmd &gt; file</td><td>출력을 파일에 <b>덮어쓰기</b></td></tr><tr><td>cmd &gt;&gt; file</td><td>파일 끝에 <b>추가</b></td></tr><tr><td>2&gt;&amp;1</td><td>에러 출력을 표준 출력과 합치기</td></tr><tr><td>cmd1 | cmd2</td><td>파이프</td></tr></table>",
+   "tip": "<b>&gt; 와 &gt;&gt;</b>를 바꿔 내는 함정이 단골이에요. 하나면 덮어쓰기, 둘이면 추가.",
+   "questions": [
+    {
+     "level": "쉬움",
+     "q": "파일 끝에 추가되는 내용을 <b>실시간으로</b> 계속 출력하는 명령은?",
+     "choices": [
+      "<code>head -f</code>",
+      "<code>tail -f</code>",
+      "<code>cat -f</code>",
+      "<code>more -f</code>"
+     ],
+     "answer": 1,
+     "explain": "<b>tail -f</b>(follow)가 파일 끝을 계속 따라가며 보여줘요."
+    },
+    {
+     "level": "보통",
+     "q": "<code>grep -v \"DEBUG\" app.log</code>의 결과는?",
+     "choices": [
+      "DEBUG가 들어간 줄만 출력",
+      "DEBUG가 들어간 줄의 개수 출력",
+      "DEBUG가 <b>들어가지 않은</b> 줄만 출력",
+      "DEBUG를 대소문자 구분 없이 출력"
+     ],
+     "answer": 2,
+     "explain": "<b>-v</b>는 패턴과 일치하지 <b>않는</b> 줄을 출력해요. 디버그 줄을 걸러내고 볼 때 유용합니다."
+    },
+    {
+     "level": "함정",
+     "q": "리다이렉션에 대한 설명으로 <b>틀린</b> 것은?",
+     "choices": [
+      "<code>cmd &gt;&gt; file</code>은 파일 끝에 출력을 추가한다",
+      "<code>cmd &gt; file</code>은 기존 파일 뒤에 출력을 덧붙인다",
+      "<code>cmd 2&gt; err.log</code>는 에러 출력만 파일로 보낸다",
+      "<code>cmd &gt; out.log 2&gt;&amp;1</code>은 일반·에러 출력을 같은 파일에 쓴다"
+     ],
+     "answer": 1,
+     "explain": "<code>&gt;</code> 하나는 <b>덮어쓰기</b>예요. 기존 내용이 사라집니다. 덧붙이기는 <code>&gt;&gt;</code>."
+    }
+   ]
+  },
+  "eng": {
+   "items": [
+    {
+     "en": "tail the log",
+     "ko": "로그를 실시간으로 지켜보다",
+     "where": "운영 매뉴얼·메신저",
+     "ex": "Can you tail the log while I reproduce the error?",
+     "ex_ko": "제가 에러를 재현하는 동안 로그 좀 지켜봐 줄래요?"
+    },
+    {
+     "en": "grep for",
+     "ko": "~을 grep으로 찾다",
+     "where": "운영 대화·이슈 코멘트",
+     "ex": "Grep for the request ID in all WAS logs.",
+     "ex_ko": "모든 WAS 로그에서 요청 ID를 검색해 보세요."
+    },
+    {
+     "en": "log rotation",
+     "ko": "로그 롤링(교체·보관)",
+     "where": "서버 설정 문서",
+     "ex": "Log rotation runs daily at midnight and compresses old files.",
+     "ex_ko": "로그 롤링은 매일 자정에 실행되고 오래된 파일을 압축한다."
+    },
+    {
+     "en": "timestamp",
+     "ko": "(로그에 찍힌) 시각",
+     "where": "로그·장애 보고",
+     "ex": "All timestamps in the report are in KST.",
+     "ex_ko": "보고서의 모든 시각은 KST 기준입니다."
+    },
+    {
+     "en": "UTC offset",
+     "ko": "UTC와의 시차",
+     "where": "로그 형식·서버 설정",
+     "ex": "The +0900 in the access log is the UTC offset for KST.",
+     "ex_ko": "액세스 로그의 +0900은 KST의 UTC 시차다."
+    }
+   ],
+   "tip": "로그 시각 끝의 <b>Z</b>는 UTC(\"Zulu\"), <b>+0900</b>은 한국 시간이라는 표시예요.",
+   "reading": {
+    "title": "UTC로 찍힌 로그 읽기",
+    "text": "2026-10-21T00:12:03Z ERROR [exec-7] Request processing failed\n2026-10-21T00:12:03Z WARN  [exec-7] Retrying in 5 seconds (attempt 1/3)\n2026-10-21T00:12:08Z INFO  [exec-7] Retry succeeded",
+    "lines": [
+     {
+      "en": "2026-10-21T00:12:03Z",
+      "ko": "끝의 <b>Z = UTC</b> → 한국 시간으론 <b>09:12:03</b> (+9시간)"
+     },
+     {
+      "en": "Request processing failed",
+      "ko": "요청 처리 실패"
+     },
+     {
+      "en": "Retrying in 5 seconds (attempt 1/3)",
+      "ko": "5초 후 재시도 (3번 중 1번째)"
+     },
+     {
+      "en": "Retry succeeded",
+      "ko": "재시도 성공 → 사용자에겐 5초 지연으로 보였을 수 있어요"
+     }
+    ],
+    "note": "💡 \"9시쯤 잠깐 느렸어요\"라는 문의는 이런 <b>재시도 성공</b> 로그로 설명되는 경우가 많아요. ERROR만 grep하면 놓치니 <b>WARN·INFO까지 앞뒤 문맥</b>을 보세요."
+   }
+  }
+ }
+}

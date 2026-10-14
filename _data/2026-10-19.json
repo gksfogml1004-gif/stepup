@@ -1,0 +1,381 @@
+{
+ "date": "2026-10-19",
+ "day": 8,
+ "cycle": 1,
+ "track": "dev",
+ "topic_no": 2,
+ "level": "기초",
+ "title": "equals/hashCode, String 불변성",
+ "lead": "\"같다\"에는 두 가지 뜻이 있다 — 문자열 비교 버그와 HashMap에서 객체를 못 찾는 버그의 공통 원인",
+ "one_liner": "내용 비교는 equals, equals를 고치면 hashCode도 같이.",
+ "key_points": [
+  "<code>==</code>는 <b>같은 객체(주소)</b>, <code>equals()</code>는 <b>같은 내용</b>",
+  "<code>equals</code>를 재정의하면 <code>hashCode</code>도 반드시 — 안 그러면 HashMap에서 못 찾음",
+  "String은 불변: 비교는 <code>\"Y\".equals(x)</code>, 반복 연결은 <code>StringBuilder</code>"
+ ],
+ "review_note": "지난 금요일 3문항 + 지난주 1문항",
+ "review": [
+  {
+   "from": "10/16 · SM",
+   "ref": "2026-10-16-q0",
+   "q": "\"화면 속도를 개선해 주세요\"를 테스트 가능한 요구사항으로 바꾸려면 무엇을 물어야 할까?",
+   "a": "<b>어떤 화면·동작</b>, <b>조건</b>(기간·건수), <b>목표 기준값</b>(예: 3초 이내)."
+  },
+  {
+   "from": "10/16 · SM",
+   "ref": "2026-10-16-q1",
+   "q": "컬럼 길이를 늘릴 때 영향도 분석에서 자주 빠지는 곳은?",
+   "a": "<b>배치·통계</b>, 참조 <b>뷰·프로시저·임시 테이블</b>, 연계 인터페이스 길이."
+  },
+  {
+   "from": "10/16 · SM",
+   "ref": "2026-10-16-q3",
+   "q": "개발 중 메신저로 \"이것도 추가해 주세요\". 어떻게 처리할까?",
+   "a": "<b>변경 요청</b>으로 받아 영향·일정 재산정 후 합의, 정의서 <b>버전 이력</b>에 기록."
+  },
+  {
+   "from": "10/12 · 개발",
+   "ref": "2026-10-12-q0",
+   "q": "<code>Order o = new Order();</code> — 변수 <code>o</code>와 객체는 각각 어디에?",
+   "a": "<code>o</code>(주소)는 <b>Stack</b>, 객체는 <b>Heap</b>. 오늘 배우는 <code>==</code>가 바로 이 <b>주소</b>를 비교해요."
+  }
+ ],
+ "concept": {
+  "title": "\"같다\"를 판단하는 네 가지 도구",
+  "steps": [
+   {
+    "t": "==",
+    "d": "<b>같은 객체인가</b> (주소 비교)",
+    "small": "기본형(int 등)은 값 비교<br>참조형은 주소 비교"
+   },
+   {
+    "t": "equals()",
+    "d": "<b>내용이 같은가</b>",
+    "small": "String·Integer는 이미 재정의됨<br>내 클래스는 직접 재정의"
+   },
+   {
+    "t": "hashCode()",
+    "d": "HashMap에서 <b>어느 칸</b>에 둘지",
+    "small": "equals가 true면<br>hashCode도 같아야 함"
+   },
+   {
+    "t": "String 불변",
+    "d": "값을 바꾸면 <b>새 객체</b>가 생김",
+    "small": "<code>s += \"a\"</code>는 새 String 생성<br>원래 객체는 그대로"
+   }
+  ],
+  "info": "📌 HashMap·HashSet은 <b>hashCode로 칸을 찾고 → equals로 확인</b>해요. 그래서 equals만 고치고 hashCode를 안 고치면, 내용이 같은 객체도 <b>다른 칸</b>을 뒤져서 못 찾습니다.",
+  "compare_title": "현장에서 실제로 터지는 3가지",
+  "compare": [
+   {
+    "kind": "warn",
+    "t": "equals만 재정의",
+    "d": "HashSet에 같은 키가 <b>중복 저장</b>, HashMap.get이 <b>null</b><br>→ 가끔 집계가 틀리는 버그"
+   },
+   {
+    "kind": "ok",
+    "t": "둘 다 재정의",
+    "d": "IDE 자동 생성 또는<br><code>Objects.equals</code> + <code>Objects.hash</code>"
+   },
+   {
+    "kind": "",
+    "t": "문자열을 ==로 비교",
+    "d": "리터럴끼리는 우연히 true<br>DB·화면 입력값은 <b>false</b> → 조건이 가끔 안 맞음"
+   }
+  ],
+  "deep": [
+   {
+    "t": "① equals·hashCode 규약",
+    "d": "<b>equals가 true면 hashCode는 반드시 같아야</b> 해요. 반대로 hashCode가 같다고 equals가 true일 필요는 없어요(해시 충돌). equals는 반사성(x.equals(x))·대칭성·추이성·일관성, 그리고 <code>x.equals(null)</code>은 false여야 합니다."
+   },
+   {
+    "t": "② HashMap 키 객체를 바꾸면 사라진다",
+    "d": "키로 넣은 객체의 필드를 나중에 바꾸면 hashCode가 달라져 <b>원래 칸에서 못 찾아요</b>(메모리에는 남아 누수처럼 보이기도). 그래서 키는 <b>String·Long 같은 불변 객체</b>나 필드를 바꾸지 않는 객체를 씁니다."
+   },
+   {
+    "t": "③ String이 불변인 이유와 연결 성능",
+    "d": "불변이라 <b>상수 풀로 공유</b>할 수 있고, 여러 스레드가 써도 안전하며, 해시값도 캐시할 수 있어요. 한 줄 안의 <code>+</code> 연결은 컴파일러가 최적화하지만, <b>반복문 안의 <code>+=</code></b>는 매번 새 객체를 만들어 대량일 때 느려집니다 → <code>StringBuilder</code>. Lombok <code>@Data</code>를 JPA 엔티티에 쓰면 연관 필드까지 equals에 들어가 문제가 생길 수 있으니 주의."
+   },
+   {
+    "t": "④ 리뷰·면접에서 나오는 질문",
+    "d": "Q. <b>equals만 재정의하고 hashCode를 안 하면 어떤 문제가 생기나요?</b><br>A. 내용이 같은 두 객체가 다른 hashCode를 가져서 HashMap·HashSet이 <b>다른 칸</b>을 찾아요. 그래서 get이 null을 주거나 Set에 중복이 들어갑니다."
+   }
+  ]
+ },
+ "lab": [
+  {
+   "icon": "🔍",
+   "title": "실습 1 · == 와 equals 차이 직접 보기",
+   "code": "String a = \"SM\";\nString b = \"SM\";\nString c = new String(\"SM\");\nSystem.out.println(a == b);\nSystem.out.println(a == c);\nSystem.out.println(a.equals(c));",
+   "output": "true\nfalse\ntrue",
+   "read": [
+    "<code>a == b</code>가 true인 건 리터럴이 <b>상수 풀에서 같은 객체를 공유</b>해서 — 우연이에요",
+    "<code>new String</code>, DB 조회값, 화면 입력값은 <b>매번 새 객체</b> → <code>==</code>는 false",
+    "그래서 문자열은 <b>항상 equals</b>로 비교하는 게 규칙"
+   ]
+  },
+  {
+   "icon": "🐛",
+   "title": "실습 2 · hashCode를 빼먹으면",
+   "code": "class OrderKey {\n  String orderNo;\n  OrderKey(String no) { orderNo = no; }\n  @Override public boolean equals(Object o) {\n    return o instanceof OrderKey\n      && orderNo.equals(((OrderKey) o).orderNo);\n  }\n  // hashCode 재정의 없음\n}\nSet<OrderKey> set = new HashSet<>();\nset.add(new OrderKey(\"A1\"));\nset.add(new OrderKey(\"A1\"));\nSystem.out.println(set.size());",
+   "output": "2",
+   "read": [
+    "같은 주문번호인데 <b>중복으로 2개</b> 들어갔어요 (기본 hashCode가 객체마다 달라서)",
+    "아래 한 줄을 추가하면 1이 돼요:<br><code>@Override public int hashCode() { return Objects.hash(orderNo); }</code>",
+    "IDE의 Generate → equals() and hashCode()로 <b>둘을 같이</b> 만드는 습관을"
+   ]
+  },
+  {
+   "icon": "🛡️",
+   "title": "실습 3 · null 안전 비교와 문자열 연결",
+   "code": "// status가 null이면 NullPointerException\nif (status.equals(\"Y\")) { ... }\n// 안전한 방법 두 가지\nif (\"Y\".equals(status)) { ... }\nif (Objects.equals(status, \"Y\")) { ... }\n\n// 반복 연결은 StringBuilder\nStringBuilder sb = new StringBuilder();\nfor (Order o : list) {\n  sb.append(o.getNo()).append(',');\n}",
+   "tip": "💡 구분자로 이어 붙이기만 할 거면 <code>String.join(\",\", 목록)</code>이 더 간단해요."
+  }
+ ],
+ "mistakes": [
+  {
+   "t": "문자열을 ==로 비교",
+   "d": "테스트(리터럴)에선 통과하고 운영(입력값)에서 가끔 틀려요. 찾기 어려운 버그 1순위."
+  },
+  {
+   "t": "equals만 재정의",
+   "d": "HashSet 중복·HashMap get null. 둘은 <b>항상 같이</b> 재정의하세요."
+  },
+  {
+   "t": "HashMap 키로 쓴 객체의 값을 변경",
+   "d": "넣은 뒤 키 필드를 바꾸면 그 항목을 다시 못 찾아요. 키는 불변으로."
+  },
+  {
+   "t": "변수.equals(\"상수\")로 NPE",
+   "d": "null이 들어오면 바로 터져요. <code>\"상수\".equals(변수)</code> 또는 <code>Objects.equals</code>."
+  }
+ ],
+ "work": {
+  "items": [
+   "코드 리뷰 체크리스트에 <b>\"문자열 == 비교 금지, equals·hashCode 쌍 확인\"</b> 추가",
+   "\"가끔 조건이 안 맞아요\" 장애 문의가 오면 <b>문자열 == 비교</b>부터 의심",
+   "VO·DTO를 Map 키나 Set에 넣는다면 equals·hashCode를 <b>IDE 자동 생성</b>으로",
+   "정적 분석 도구(SonarQube 등)를 쓰면 이 규칙들을 자동으로 잡아줘요"
+  ]
+ },
+ "quiz": [
+  {
+   "q": "<code>a == c</code>는 false인데 <code>a.equals(c)</code>는 true. 왜일까?",
+   "a": "<code>==</code>는 <b>주소</b>(같은 객체인지), equals는 <b>내용</b>을 비교. 내용은 같지만 서로 다른 객체예요."
+  },
+  {
+   "q": "equals만 재정의한 키로 HashMap.get을 했더니 null. 이유는?",
+   "a": "hashCode를 재정의하지 않아 내용이 같아도 <b>다른 칸</b>을 찾기 때문. hashCode도 함께 재정의해야 해요."
+  },
+  {
+   "q": "<code>\"Y\".equals(status)</code>가 <code>status.equals(\"Y\")</code>보다 안전한 이유는?",
+   "a": "status가 null이어도 <b>NPE가 나지 않고 false</b>를 돌려주기 때문."
+  },
+  {
+   "q": "반복문에서 수만 번 <code>str += x</code>를 하면 왜 느릴까?",
+   "a": "String은 불변이라 <b>매번 새 객체</b>를 만들고 복사해요. StringBuilder는 한 버퍼에 이어 붙입니다."
+  }
+ ],
+ "next": {
+  "track": "db",
+  "title": "실행계획 읽는 법",
+  "question": "실행계획에서 <b>예상 건수</b>는 1,200건인데 실제로는 10만 건을 읽었다면, 무엇이 잘못된 걸까요?",
+  "tip": "10/13에 본 실행계획을 이번엔 Rows·Cost·조인 방식까지 읽어 봅니다."
+ },
+ "terms": [
+  {
+   "term": "동일성 (==)",
+   "desc": "두 참조가 같은 객체(같은 주소)를 가리키는지 비교"
+  },
+  {
+   "term": "동등성 (equals)",
+   "desc": "두 객체의 내용이 같은지 비교. 클래스에서 재정의해 기준을 정함"
+  },
+  {
+   "term": "hashCode",
+   "desc": "객체를 해시 테이블의 어느 칸에 둘지 정하는 정수값. equals가 같으면 같아야 함"
+  },
+  {
+   "term": "해시 충돌",
+   "desc": "서로 다른 객체가 같은 hashCode를 갖는 것. 같은 칸에서 equals로 구분"
+  },
+  {
+   "term": "문자열 상수 풀 (String Pool)",
+   "desc": "같은 문자열 리터럴을 한 객체로 공유하는 JVM 영역"
+  },
+  {
+   "term": "불변 객체 (Immutable)",
+   "desc": "만든 뒤 값을 바꿀 수 없는 객체. String, Integer, LocalDate 등"
+  },
+  {
+   "term": "StringBuilder",
+   "desc": "문자열을 하나의 버퍼에 이어 붙이는 가변 클래스. 반복 연결에 사용"
+  },
+  {
+   "term": "NullPointerException (NPE)",
+   "desc": "null인 참조로 메서드를 호출하거나 필드에 접근할 때 나는 예외"
+  }
+ ],
+ "cheat": [
+  {
+   "cmd": "\"Y\".equals(value)",
+   "desc": "null 안전 문자열 비교 (상수를 앞에)"
+  },
+  {
+   "cmd": "Objects.equals(a, b)",
+   "desc": "둘 다 null이어도 안전한 비교"
+  },
+  {
+   "cmd": "@Override public int hashCode() { return Objects.hash(f1, f2); }",
+   "desc": "equals에 쓴 필드로 hashCode 재정의"
+  },
+  {
+   "cmd": "String.join(\",\", list)",
+   "desc": "목록을 구분자로 이어 붙이기"
+  },
+  {
+   "cmd": "StringBuilder sb = new StringBuilder(); sb.append(x);",
+   "desc": "반복문 안 문자열 연결"
+  }
+ ],
+ "extras": {
+  "comm": {
+   "theme": "코드 리뷰 피드백",
+   "cases": [
+    {
+     "title": "리뷰 코멘트 남기기",
+     "situation": "동료 코드에서 문자열을 ==로 비교한 부분을 발견했다.",
+     "bad": "이거 틀렸어요. 고치세요.",
+     "good": "여기 <code>status == \"Y\"</code>는 입력값일 때 false가 나올 수 있어요. <code>\"Y\".equals(status)</code>로 바꾸면 null도 안전합니다. <b>어떻게 생각하세요?</b>"
+    },
+    {
+     "title": "피드백을 받았을 때",
+     "situation": "내 코드에 hashCode 누락 지적이 달렸다.",
+     "bad": "테스트에선 잘 됐는데요?",
+     "good": "좋은 지적 감사합니다. 말씀대로 hashCode도 추가하고, <b>같은 패턴이 다른 VO에도 있는지</b> 같이 찾아서 반영하겠습니다."
+    },
+    {
+     "title": "의견이 다를 때",
+     "situation": "리뷰어는 StringBuilder로 바꾸라는데, 반복 횟수가 3번뿐이다.",
+     "bad": "그건 쓸데없는 최적화예요.",
+     "good": "이 부분은 최대 3번 반복이라 성능 차이가 거의 없어서 <b>가독성</b> 때문에 + 연결로 두려고 해요. 혹시 다른 이유가 있으시면 말씀해 주세요. 팀 기준이 있으면 그걸 따를게요."
+    }
+   ],
+   "points": [
+    "<b>사람이 아니라 코드에 대해</b>: \"틀렸다\" 대신 \"이 경우 이런 문제가 생길 수 있다\"",
+    "<b>이유 + 대안 + 질문</b>: 왜 문제인지, 어떻게 바꾸면 되는지, 상대 의견은?",
+    "<b>받을 땐 감사 + 확장</b>: 같은 문제가 다른 곳에도 있는지 찾기"
+   ],
+   "template": "[리뷰] 어디가 (파일·줄)\n어떤 상황에서 무슨 문제가 (근거)\n이렇게 바꾸면 (대안 코드)\n어떻게 생각하세요?",
+   "phrases": [
+    "이 부분은 ~한 경우에 ~ 문제가 생길 수 있을 것 같아요.",
+    "~로 바꾸면 어떨까요? 의견 주세요.",
+    "좋은 지적 감사합니다. 반영하고 비슷한 곳도 같이 확인하겠습니다.",
+    "제 생각은 ~ 때문에 ~인데, 팀 기준이 있으면 맞추겠습니다."
+   ]
+  },
+  "cert": {
+   "exam": "정보처리기사",
+   "subject": "프로그래밍 언어 활용 · Java",
+   "summary": "<b>비교 정리</b><table><tr><th>표현</th><th>비교 대상</th></tr><tr><td>기본형 ==</td><td>값</td></tr><tr><td>참조형 ==</td><td>주소(같은 객체?)</td></tr><tr><td>equals()</td><td>내용 (재정의 기준)</td></tr></table><b>규약</b>: equals가 true → hashCode 같아야 함 / hashCode 같음 → equals는 다를 수 있음(충돌)<br><b>String</b>: 불변 · 리터럴은 상수 풀 공유 · <code>new String()</code>은 새 객체",
+   "tip": "코드 출력 문제에서 <b>리터럴 vs new String</b>의 <code>==</code> 결과를 묻는 게 단골이에요.",
+   "questions": [
+    {
+     "level": "쉬움",
+     "q": "Java에서 두 문자열의 <b>내용</b>이 같은지 비교할 때 쓰는 것은?",
+     "choices": [
+      "<code>==</code>",
+      "<code>equals()</code>",
+      "<code>hashCode()</code>",
+      "<code>compareTo() == 1</code>"
+     ],
+     "answer": 1,
+     "explain": "<b>equals()</b>가 내용 비교예요. <code>==</code>는 같은 객체인지(주소)를 비교합니다. compareTo는 같으면 0을 반환해요."
+    },
+    {
+     "level": "보통",
+     "q": "다음 코드의 출력은?<br><code>String s1 = \"a\"; String s2 = new String(\"a\");<br>System.out.print(s1 == s2);<br>System.out.print(s1.equals(s2));</code>",
+     "choices": [
+      "truetrue",
+      "truefalse",
+      "falsetrue",
+      "falsefalse"
+     ],
+     "answer": 2,
+     "explain": "<code>new String</code>은 새 객체라 <code>==</code>는 <b>false</b>, 내용은 같아서 equals는 <b>true</b>."
+    },
+    {
+     "level": "함정",
+     "q": "equals와 hashCode에 대한 설명으로 <b>틀린</b> 것은?",
+     "choices": [
+      "equals가 true인 두 객체는 hashCode가 같아야 한다",
+      "hashCode가 같으면 equals는 반드시 true이다",
+      "HashMap은 hashCode로 위치를 찾고 equals로 비교한다",
+      "equals를 재정의하면 hashCode도 재정의하는 것이 원칙이다"
+     ],
+     "answer": 1,
+     "explain": "hashCode가 같아도 내용이 다를 수 있어요(<b>해시 충돌</b>). 그래서 같은 칸 안에서 equals로 한 번 더 비교합니다."
+    }
+   ]
+  },
+  "eng": {
+   "items": [
+    {
+     "en": "override",
+     "ko": "(메서드를) 재정의하다",
+     "where": "코드·리뷰 코멘트",
+     "ex": "You should override hashCode() whenever you override equals().",
+     "ex_ko": "equals()를 재정의할 때마다 hashCode()도 재정의해야 한다."
+    },
+    {
+     "en": "immutable",
+     "ko": "불변의 (바꿀 수 없는)",
+     "where": "Java 문서·설계 리뷰",
+     "ex": "String objects are immutable, so concatenation creates a new object.",
+     "ex_ko": "String은 불변이라 연결하면 새 객체가 생긴다."
+    },
+    {
+     "en": "equality vs. identity",
+     "ko": "동등성(내용) vs 동일성(같은 객체)",
+     "where": "Java 문서·기술 블로그",
+     "ex": "Use equals() for equality and == for identity.",
+     "ex_ko": "내용 비교는 equals(), 같은 객체 확인은 ==."
+    },
+    {
+     "en": "hash collision",
+     "ko": "해시 충돌",
+     "where": "자료구조 문서",
+     "ex": "Different keys may have the same hash code, which is called a hash collision.",
+     "ex_ko": "서로 다른 키가 같은 해시코드를 가질 수 있는데 이를 해시 충돌이라 한다."
+    },
+    {
+     "en": "null-safe",
+     "ko": "null이 와도 안전한",
+     "where": "코드 리뷰·유틸 문서",
+     "ex": "Objects.equals() is a null-safe way to compare two objects.",
+     "ex_ko": "Objects.equals()는 null에 안전한 비교 방법이다."
+    }
+   ],
+   "tip": "Java API 문서(Javadoc)는 영어로만 나와요. 클래스 이름 + <b>Javadoc</b>으로 검색해 메서드 설명 첫 문장만 읽어도 대부분 해결됩니다.",
+   "reading": {
+    "title": "equals·hashCode 규약 읽기 (요약 영문)",
+    "text": "If two objects are equal according to equals(),\n  they must return the same hashCode.\nTwo objects with the same hashCode are not necessarily equal.\nWhen you override equals(), you should also override hashCode().",
+    "lines": [
+     {
+      "en": "If two objects are equal according to equals(), they must return the same hashCode.",
+      "ko": "equals로 같은 두 객체는 <b>반드시</b> 같은 hashCode를 돌려줘야 한다"
+     },
+     {
+      "en": "Two objects with the same hashCode are not necessarily equal.",
+      "ko": "hashCode가 같은 두 객체가 <b>반드시 같은 건 아니다</b> (충돌)"
+     },
+     {
+      "en": "When you override equals(), you should also override hashCode().",
+      "ko": "equals를 재정의하면 hashCode도 재정의해야 한다"
+     }
+    ],
+    "note": "💡 <b>must</b>(반드시) · <b>not necessarily</b>(꼭 그런 건 아님) · <b>should</b>(해야 함) — 기술 문서의 규칙은 이 세 단어 강도로 구분돼요."
+   }
+  }
+ }
+}

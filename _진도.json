@@ -154,6 +154,56 @@
       "title": "요구사항정의서·영향도 분석",
       "one_liner": "좋은 요구사항은 테스트할 수 있는 문장, 좋은 영향도 분석은 근거가 남는 검색.",
       "path": "days/2026-10-16.html"
+    },
+    {
+      "date": "2026-10-19",
+      "day": 8,
+      "cycle": 1,
+      "track": "dev",
+      "topic_no": 2,
+      "title": "equals/hashCode, String 불변성",
+      "one_liner": "내용 비교는 equals, equals를 고치면 hashCode도 같이.",
+      "path": "days/2026-10-19.html"
+    },
+    {
+      "date": "2026-10-20",
+      "day": 9,
+      "cycle": 1,
+      "track": "db",
+      "topic_no": 2,
+      "title": "실행계획 읽는 법",
+      "one_liner": "안쪽부터 읽고, 예상 건수와 실제 건수가 다른 곳을 의심하라.",
+      "path": "days/2026-10-20.html"
+    },
+    {
+      "date": "2026-10-21",
+      "day": 10,
+      "cycle": 1,
+      "track": "server",
+      "topic_no": 2,
+      "title": "로그 보기(tail/grep/less/awk)",
+      "one_liner": "tail로 지켜보고, grep으로 찾고, less로 넓게 보고, awk·uniq로 센다.",
+      "path": "days/2026-10-21.html"
+    },
+    {
+      "date": "2026-10-22",
+      "day": 11,
+      "cycle": 1,
+      "track": "net",
+      "topic_no": 3,
+      "title": "IP·서브넷·CIDR·게이트웨이",
+      "one_liner": "같은 대역은 직접, 다른 대역은 게이트웨이로.",
+      "path": "days/2026-10-22.html"
+    },
+    {
+      "date": "2026-10-23",
+      "day": 12,
+      "cycle": 1,
+      "track": "sm",
+      "topic_no": 3,
+      "title": "장애보고서 작성법",
+      "one_liner": "원인은 사람이 아니라 구조, 재발 방지는 다짐이 아니라 행동·담당·기한.",
+      "path": "days/2026-10-23.html"
     }
   ],
   "rotation": [
